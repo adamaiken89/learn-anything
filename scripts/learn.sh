@@ -31,14 +31,21 @@ check_subject() {
 
 cmd_init() {
   local subject="$1"
+  local lang="${2:-en}"
   local dir="$SUBJECTS_DIR/$subject"
   if [ -d "$dir" ]; then
     echo "Subject '$subject' already exists"
     exit 1
   fi
   mkdir -p "$dir/modules" "$dir/srs"
-  cp "$SKILL_DIR/templates/syllabus.yaml" "$dir/syllabus.yaml"
-  echo "Created $dir"
+  # Copy template, set subject name + language
+  sed "s/\"\[Subject\]\"/\"$subject\"/" "$SKILL_DIR/templates/syllabus.yaml" > "$dir/syllabus.yaml"
+  if [[ "$(uname)" == "Darwin" ]]; then
+    sed -i '' "s/^language: .*/language: $lang/" "$dir/syllabus.yaml"
+  else
+    sed -i "s/^language: .*/language: $lang/" "$dir/syllabus.yaml"
+  fi
+  echo "Created $dir (language: $lang)"
   echo "Edit syllabus.yaml, then create modules with: learn.sh create-module <subject> <id>"
 }
 
@@ -51,6 +58,11 @@ cmd_start() {
   if [ -f "$syllabus" ]; then
     echo -e "${CYAN}=== $subject ===${NC}"
     head -20 "$syllabus" 2>/dev/null || true
+    # Show language
+    local lang=$(grep "^language:" "$syllabus" 2>/dev/null | awk '{print $2}')
+    if [ -n "$lang" ]; then
+      echo -e "${GREEN} Language: $lang${NC}"
+    fi
     echo ""
   fi
 
@@ -373,9 +385,10 @@ print('Import into Anki via: File > Import')
 cmd="${1:-help}"
 subject="${2:-}"
 module="${3:-}"
+lang="${4:-}"
 
 case "$cmd" in
-  init)    cmd_init "$subject" ;;
+  init)    cmd_init "$subject" "$module" ;;
   start)   cmd_start "$subject" ;;
   quiz)    cmd_quiz "$subject" "$module" ;;
   explain|feynman) cmd_explain "$subject" "$module" ;;
@@ -386,7 +399,7 @@ case "$cmd" in
     echo "Usage: learn.sh <command> <subject> [module]"
     echo ""
     echo "Commands:"
-    echo "  init <subject>             Create new subject"
+    echo "  init <subject> [lang]       Create new subject (lang: en|zh|yue, default en)"
     echo "  start <subject>            Show subject overview and modules"
     echo "  quiz <subject> <mod>       Take MCQ quiz"
     echo "  explain <subject> <mod>    Feynman Technique prompt"

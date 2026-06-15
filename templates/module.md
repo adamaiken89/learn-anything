@@ -1,6 +1,7 @@
 # Module N: [Title]
 
 Est. study time: [X]h
+Language: [en/zh/yue]
 
 ## Learning Objectives
 - [Objective 1]

@@ -51,7 +51,7 @@ Ease factor min 1.3. Adjusts per card based on answer history.
 
 ```
 subjects/<topic>/
-├── syllabus.yaml       # Full course plan
+├── syllabus.yaml       # Full course plan (includes language: en|zh|yue)
 ├── modules/
 │   ├── NN-name/
 │   │   ├── lesson.md   # Content + Feynman prompt + reframe

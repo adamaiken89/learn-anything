@@ -78,6 +78,7 @@ subjects/<topic>/
 ### syllabus.yaml
 ```yaml
 subject: "Fixed Income Fundamentals"
+language: en
 time_budget_hours: 40
 target_level: intermediate
 domain: finance
@@ -111,7 +112,7 @@ modules:
 ## 3. Content Creation Protocol
 
 ### A. Scope (15-30 min)
-Ask: domain, level, time budget, practical use. Propose syllabus.
+Ask: domain, level, time budget, language, practical use. Propose syllabus.
 
 ### B. Per module (10-20 min)
 1. Write lesson.md with embedded Feynman prompt + quiz.yaml
@@ -122,6 +123,7 @@ Ask: domain, level, time budget, practical use. Propose syllabus.
 Extract MCQs → SM-2 deck
 
 ### Content principles
+- **Language**: Create all content in language from syllabus.yaml (`en`/`zh`/`yue`). Questions, explanations, examples all in target language.
 - **Practical first**: Start with daily encounters, bridge to theory
 - **Domain-relevant examples**: Scenarios from learner's industry
 - **MCQ diversity**: 40% recall, 40% application, 20% multi-step
@@ -177,7 +179,7 @@ Extract MCQs → SM-2 deck
 ## 5. CLI
 
 ```bash
-./scripts/learn.sh init <subject>                # Create new subject
+./scripts/learn.sh init <subject> [lang]         # Create new subject (lang: en|zh|yue, default en)
 ./scripts/learn.sh start <subject>               # Show overview + modules
 ./scripts/learn.sh quiz <subject> <module>       # MCQ drill
 ./scripts/learn.sh explain <subject> <module>    # Feynman prompt + probing guide*
