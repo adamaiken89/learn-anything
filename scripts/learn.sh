@@ -385,84 +385,44 @@ cmd_epub() {
   local subject="$1"
   local out="${2:-$SUBJECTS_DIR/$subject/$subject.epub}"
   check_subject "$subject"
-
-  local dir="$SUBJECTS_DIR/$subject"
-  local tmp_dir=$(mktemp -d)
-  local md_file="$tmp_dir/book.md"
-
   echo -e "${CYAN}Building EPUB: $subject${NC}"
-
-  > "$md_file"
-  echo "# $subject" >> "$md_file"
-  echo "" >> "$md_file"
-
-  local mod_count=0
-  for mod in "$dir/modules/"*/; do
-    [ -d "$mod" ] || continue
-    local name=$(basename "$mod")
-    local lesson="$mod/lesson.md"
-    local quiz="$mod/quiz.yaml"
-
-    echo "" >> "$md_file"
-    echo "---" >> "$md_file"
-    echo "" >> "$md_file"
-
-    if [ -f "$lesson" ]; then
-      cat "$lesson" >> "$md_file"
-      echo "" >> "$md_file"
-    fi
-
-    if [ -f "$quiz" ]; then
-      echo "## Quiz: $name" >> "$md_file"
-      echo "" >> "$md_file"
-      # Parse quiz YAML into markdown Q&A
-      python3 -c "
-import yaml, sys, os
-quiz_path = os.environ.get('QUIZ_PATH', '$quiz')
-with open(quiz_path) as f:
-    questions = yaml.safe_load(f)
-for q in questions:
-    ans = q['answer']
-    print(f'### {q[\"question\"]}')
-    for k, v in q['options'].items():
-        mark = '✓' if k == ans else ' '
-        print(f'- [{mark}] {k}: {v}')
-    print()
-    print(f'**Answer:** {ans}')
-    print(f'**Explanation:** {q[\"explanation\"]}')
-    print()
-" >> "$md_file" 2>/dev/null || echo "(quiz questions unavailable)" >> "$md_file"
-    fi
-
-    ((mod_count++))
-  done
-
-  if [ "$mod_count" -eq 0 ]; then
-    echo -e "${YELLOW}No modules found in $dir/modules/${NC}"
-    rm -rf "$tmp_dir"
-    return
-  fi
-
-  mkdir -p "$(dirname "$out")"
-  rm -f "$out"
-
-  if command -v pandoc &>/dev/null; then
-    pandoc "$md_file" -o "$out" --metadata title="$subject" --metadata author="Learn Anything" --toc --toc-depth=2 2>/dev/null || true
-  fi
-
-  if [ ! -f "$out" ] && command -v python3 &>/dev/null; then
-    python3 "$SKILL_DIR/scripts/epubgen.py" "$md_file" "$out" "$subject" || true
-  fi
-
+  python3 "$SKILL_DIR/scripts/epub.py" build "$SUBJECTS_DIR/$subject" "$out"
   if [ -f "$out" ]; then
     local size=$(du -h "$out" | cut -f1)
     echo -e "${GREEN}EPUB: $out ($size)${NC}"
   else
-    echo -e "${RED}Failed. Need pandoc or Python 3.${NC}"
-    echo "  Install pandoc: brew install pandoc"
+    echo -e "${RED}Failed${NC}"
   fi
+}
 
-  rm -rf "$tmp_dir"
+cmd_epub_regen() {
+  local subject="$1"
+  local out="${2:-$SUBJECTS_DIR/$subject/$subject.epub}"
+  local book="$SUBJECTS_DIR/$subject/book.md"
+  check_subject "$subject"
+  if [ ! -f "$book" ]; then
+    echo -e "${YELLOW}No book.md. Run 'epub' first.${NC}"
+    return
+  fi
+  echo -e "${CYAN}Regenerating EPUB from cached markdown: $subject${NC}"
+  python3 "$SKILL_DIR/scripts/epub.py" from-md "$book" "$out"
+  if [ -f "$out" ]; then
+    local size=$(du -h "$out" | cut -f1)
+    echo -e "${GREEN}EPUB: $out ($size)${NC}"
+  else
+    echo -e "${RED}Failed${NC}"
+  fi
+}
+
+cmd_epub_verify() {
+  local subject="$1"
+  local epub="${2:-$SUBJECTS_DIR/$subject/$subject.epub}"
+  if [ ! -f "$epub" ]; then
+    echo -e "${RED}EPUB not found: $epub${NC}"
+    return
+  fi
+  echo -e "${CYAN}Verifying EPUB: $subject${NC}"
+  python3 "$SKILL_DIR/scripts/epub.py" verify "$epub"
 }
 
 # Main
@@ -480,6 +440,8 @@ case "$cmd" in
   stats)   cmd_stats "$subject" ;;
   export)  cmd_export "$subject" ;;
   epub)    cmd_epub "$subject" "$module" ;;
+  epub-regen|epub-gen) cmd_epub_regen "$subject" "$module" ;;
+  epub-verify) cmd_epub_verify "$subject" "$module" ;;
   help|*)
     echo "Usage: learn.sh <command> <subject> [module]"
     echo ""
@@ -493,5 +455,7 @@ case "$cmd" in
     echo "  stats <subject>            Study statistics"
     echo "  export <subject>           Export to Anki CSV"
   echo "  epub <subject> [file]      Export course to EPUB book"
+  echo "  epub-regen <subject> [file] Regenerate EPUB from cached markdown"
+  echo "  epub-verify <subject> [file] Validate EPUB structure"
     ;;
 esac

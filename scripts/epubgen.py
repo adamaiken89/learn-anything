@@ -16,7 +16,7 @@ from datetime import datetime
 def inline_md(text):
     text = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', r'<img alt="\1" src="\2"/>', text)
     text = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', text)
-    text = re.sub(r'`([^`]+)`', r'<code>\1</code>', text)
+    text = re.sub(r'`([^`]+)`', lambda m: f'<code>{escape(m.group(1))}</code>', text)
     text = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', text)
     text = re.sub(r'\*([^*]+)\*', r'<em>\1</em>', text)
     return text

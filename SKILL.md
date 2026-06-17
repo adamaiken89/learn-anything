@@ -122,6 +122,8 @@ learn.sh review <subject>             # SM-2 spaced repetition
 learn.sh stats <subject>              # Progress + retention
 learn.sh export <subject>             # Anki CSV export
 learn.sh epub <subject> [file]        # Export course to EPUB book
+learn.sh epub-regen <subject> [file]  # Regenerate EPUB from cached markdown
+learn.sh epub-verify <subject> [file] # Validate EPUB structure
 ```
 
 ## 6. Cost Model (DeepSeek V4 Flash)
