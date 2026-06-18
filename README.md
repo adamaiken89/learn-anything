@@ -62,6 +62,26 @@ subjects/<topic>/
 | **REVIEW** | 10-15 min | SM-2 spaced repetition (daily) |
 | **MIXED** | 30-45 min | REVIEW + LEARN + EXPLAIN combined |
 
+## EPUB Generation
+
+After creating course content, generate portable EPUB book:
+
+```
+learn.sh epub <subject>              # Full build: assemble + generate
+learn.sh epub-regen <subject>        # Regenerate from cached book.md (faster)
+learn.sh epub-verify <subject>       # Validate EPUB structure
+```
+
+### Agent workflow
+
+1. Create all modules via content creation protocol (Section 3)
+2. Run `learn.sh epub <subject>` to assemble lessons + quizzes into single EPUB
+   - Script collects all `lesson.md` + `quiz.yaml` → writes `book.md` → generates EPUB
+3. Run `learn.sh epub-verify <subject>` to validate output
+4. To update after module edits: `learn.sh epub-regen <subject>` (skips assembly)
+
+Manual alternative: `epub.py build <subject-dir> <output>` or `epub.py from-md <book.md> <output>`.
+
 ## Cost Model
 
 Powered by **DeepSeek V4 Flash**.

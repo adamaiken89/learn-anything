@@ -593,14 +593,16 @@ def collect_subject_md(subject_dir):
                     questions = yaml.safe_load(f)
                     if questions:
                         parts.append(f'\n## Quiz: {name}\n')
-                        for q in questions:
-                            ans = q.get('answer', '')
-                            parts.append(f'\n### {q["question"]}\n')
-                            for k, v in q.get('options', {}).items():
-                                mark = '✓' if k == ans else ' '
-                                parts.append(f'- [{mark}] {k}: {v}\n')
-                            parts.append(f'\n**Answer:** {ans}\n')
-                            parts.append(f'{q.get("explanation", "")}\n')
+                    for q in questions:
+                        ans = q.get('answer', '')
+                        question_text = escape(q.get('question', ''))
+                        parts.append(f'\n### {question_text}\n')
+                        for k, v in q.get('options', {}).items():
+                            mark = '✓' if k == ans else ' '
+                            parts.append(f'- [{mark}] {k}: {escape(v)}\n')
+                        parts.append(f'\n**Answer:** {ans}\n')
+                        explanation = escape(q.get('explanation', ''))
+                        parts.append(f'{explanation}\n')
                 except Exception as e:
                     parts.append(f'\n## Quiz: {name}\n\n(quiz parse error: {e})\n')
         elif os.path.isfile(quiz_path):

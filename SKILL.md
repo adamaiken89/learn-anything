@@ -140,6 +140,19 @@ learn.sh epub-verify <subject> [file] # Validate EPUB structure
 - **Anki**: `learn.sh export` → CSV/APKG
 - **Obsidian/Notion**: Markdown imports directly
 - **Print**: Print lesson.md or quiz.yaml
+- **EPUB**: `learn.sh epub <subject>` generates EPUB 3 with hierarchical ToC, syntax highlighting, quizzes
+
+### EPUB generation workflow
+
+1. Content created → all modules complete
+2. Run `learn.sh epub <subject>` or `learn.sh epub-regen <subject> [file]`
+   - `epub`: assembles subject dir (lesson.md + quiz.yaml per module) → `book.md` → EPUB
+   - `epub-regen`: rebuild EPUB from existing `book.md` (skip assembly, faster after edits)
+3. Validate: `learn.sh epub-verify <subject> [file]`
+4. Underlying script: `epub.py build <subject-dir> <output> [--title TITLE] [--author AUTHOR]`
+   - Also: `epub.py from-md <markdown-file> <output>` for custom markdown
+   - Zero-dep fallback parser or optional `markdown` + `pygments` for GFM tables + syntax highlighting
+   - Generates valid EPUB 3 (cover, nav, spine, manifest, XHTML content)
 
 ## 8. Trigger behavior
 
