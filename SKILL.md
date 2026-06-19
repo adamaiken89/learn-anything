@@ -128,6 +128,8 @@ learn.sh export <subject>             # Anki CSV export
 learn.sh epub <subject> [file] [--local]        # Export course to EPUB book (--local: use mmdc CLI)
 learn.sh epub-regen <subject> [file] [--local]  # Regenerate EPUB from cached markdown
 learn.sh epub-verify <subject> [file]           # Validate EPUB structure
+learn.sh pdf <subject> [file] [--engine]        # Export course to PDF (auto/weasyprint/pandoc/raw)
+learn.sh pdf-regen <subject> [file] [--engine]  # Regenerate PDF from cached book.md
 ```
 
 ## 6. Cost Model (DeepSeek V4 Flash)
@@ -145,6 +147,7 @@ learn.sh epub-verify <subject> [file]           # Validate EPUB structure
 - **Obsidian/Notion**: Markdown imports directly
 - **Print**: Print lesson.md or quiz.yaml
 - **EPUB**: `learn.sh epub <subject>` generates EPUB 3 with hierarchical ToC, syntax highlighting, quizzes, Mermaid diagrams (mermaid.ink API by default, `--local` for offline mmdc CLI)
+- **PDF**: `learn.sh pdf <subject>` generates PDF with zero-dep stdlib fallback or optional weasyprint/pandoc engine (`--engine weasyprint`)
 
 ### EPUB generation workflow
 
@@ -158,6 +161,17 @@ learn.sh epub-verify <subject> [file]           # Validate EPUB structure
    - Zero-dep fallback parser or optional `markdown` + `pygments` for GFM tables + syntax highlighting
    - Mermaid diagrams rendered to SVG via mermaid.ink API (default) or local mmdc CLI (`--mermaid local`)
    - Generates valid EPUB 3 (cover, nav, spine, manifest, XHTML content, SVG diagrams)
+
+### PDF generation workflow
+
+1. Content created → all modules complete
+2. Run `learn.sh pdf <subject>` or `learn.sh pdf-regen <subject> [file]`
+   - `pdf`: assembles subject dir (lesson.md + quiz.yaml per module) → `book.md` → PDF
+   - `pdf-regen`: rebuild PDF from existing `book.md` (skip assembly, faster after edits)
+3. Underlying script: `pdf.py build <subject-dir> <output> [--title TITLE] [--engine auto|weasyprint|pandoc|raw]`
+   - Also: `pdf.py from-md <markdown-file> <output>` for custom markdown
+   - Engine priority: weasyprint (best, pip install) → pandoc → stdlib-only text PDF (zero deps)
+   - Default `--engine auto` picks best available engine
 
 ## 8. Trigger behavior
 

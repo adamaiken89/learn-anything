@@ -14,6 +14,8 @@ Usage:
    learn.py epub <subject> [output] [--mermaid api|local|off]
    learn.py epub-regen <subject> [output] [--mermaid api|local|off]
    learn.py epub-verify <subject> [output]
+   learn.py pdf <subject> [output] [--engine auto|weasyprint|pandoc|raw]
+   learn.py pdf-regen <subject> [output] [--engine auto|weasyprint|pandoc|raw]
 """
 
 import argparse
@@ -623,6 +625,79 @@ def cmd_epub(args):
         sys.exit(1)
 
 
+def cmd_pdf(args):
+    subject = args.subject
+    output = args.output
+    engine = args.engine
+
+    _check_subject(subject)
+    spath = _subject_path(subject)
+
+    if not output:
+        output = str(spath / f'{subject}.pdf')
+
+    pdf_script = SKILL_DIR / 'scripts' / 'pdf.py'
+    if not pdf_script.exists():
+        print(f'{RED}pdf.py not found at {pdf_script}{NC}')
+        sys.exit(1)
+
+    print(f'{CYAN}Building PDF: {subject}{NC}')
+    result = subprocess.run(
+        [sys.executable, str(pdf_script), 'build', str(spath), output, '--engine', engine],
+        capture_output=True,
+        text=True,
+    )
+    print(result.stdout, end='')
+    if result.stderr:
+        print(result.stderr, file=sys.stderr, end='')
+
+    if os.path.exists(output):
+        size_kb = os.path.getsize(output) / 1024
+        print(f'{GREEN}PDF: {output} ({size_kb:.1f} KB){NC}')
+    else:
+        print(f'{RED}Failed{NC}')
+        sys.exit(1)
+
+
+def cmd_pdf_regen(args):
+    subject = args.subject
+    output = args.output
+    engine = args.engine
+
+    _check_subject(subject)
+    spath = _subject_path(subject)
+    book_md = spath / 'book.md'
+
+    if not book_md.exists():
+        print(f"{YELLOW}No book.md. Run 'pdf' first.{NC}")
+        return
+
+    if not output:
+        output = str(spath / f'{subject}.pdf')
+
+    pdf_script = SKILL_DIR / 'scripts' / 'pdf.py'
+    if not pdf_script.exists():
+        print(f'{RED}pdf.py not found at {pdf_script}{NC}')
+        sys.exit(1)
+
+    print(f'{CYAN}Regenerating PDF from cached markdown: {subject}{NC}')
+    result = subprocess.run(
+        [sys.executable, str(pdf_script), 'from-md', str(book_md), output, '--engine', engine],
+        capture_output=True,
+        text=True,
+    )
+    print(result.stdout, end='')
+    if result.stderr:
+        print(result.stderr, file=sys.stderr, end='')
+
+    if os.path.exists(output):
+        size_kb = os.path.getsize(output) / 1024
+        print(f'{GREEN}PDF: {output} ({size_kb:.1f} KB){NC}')
+    else:
+        print(f'{RED}Failed{NC}')
+        sys.exit(1)
+
+
 def cmd_epub_regen(args):
     subject = args.subject
     output = args.output
@@ -715,6 +790,8 @@ Commands:
   epub <subject> [file]        Export course to EPUB book
   epub-regen <subject> [file]  Regenerate EPUB from cached markdown
   epub-verify <subject> [file] Validate EPUB structure
+  pdf <subject> [file]         Export course to PDF
+  pdf-regen <subject> [file]   Regenerate PDF from cached book.md
         """,
     )
     sub = parser.add_subparsers(dest='command')
@@ -777,6 +854,26 @@ Commands:
     p.add_argument('subject')
     p.add_argument('output', nargs='?', default=None)
 
+    p = sub.add_parser('pdf', help='Export course to PDF')
+    p.add_argument('subject')
+    p.add_argument('output', nargs='?', default=None)
+    p.add_argument(
+        '--engine',
+        default='auto',
+        choices=['auto', 'weasyprint', 'pandoc', 'raw'],
+        help='PDF engine: auto (default), weasyprint, pandoc, raw (stdlib)',
+    )
+
+    p = sub.add_parser('pdf-regen', help='Regenerate PDF from cached book.md')
+    p.add_argument('subject')
+    p.add_argument('output', nargs='?', default=None)
+    p.add_argument(
+        '--engine',
+        default='auto',
+        choices=['auto', 'weasyprint', 'pandoc', 'raw'],
+        help='PDF engine: auto (default), weasyprint, pandoc, raw (stdlib)',
+    )
+
     sub.add_parser('help', help='Show this help message')
 
     args = parser.parse_args()
@@ -799,6 +896,8 @@ Commands:
         'epub': cmd_epub,
         'epub-regen': cmd_epub_regen,
         'epub-verify': cmd_epub_verify,
+        'pdf': cmd_pdf,
+        'pdf-regen': cmd_pdf_regen,
     }
 
     fn = dispatch.get(args.command)
