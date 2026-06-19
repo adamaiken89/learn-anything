@@ -15,27 +15,28 @@ import learn
 
 # ── Test helpers ─────────────────────────────────────────────────
 
+
 def _card(ef=2.5, reps=0, interval=0):
     return {'ease_factor': ef, 'repetitions': reps, 'interval': interval}
 
 
-def _make_subject(base, name, lang="en"):
+def _make_subject(base, name, lang='en'):
     path = Path(str(base)) / name
-    (path / "modules").mkdir(parents=True)
-    (path / "srs").mkdir(parents=True)
-    src = learn.SKILL_DIR / "templates" / "syllabus.yaml"
+    (path / 'modules').mkdir(parents=True)
+    (path / 'srs').mkdir(parents=True)
+    src = learn.SKILL_DIR / 'templates' / 'syllabus.yaml'
     if src.exists():
         content = src.read_text()
         content = content.replace('"[Subject]"', f'"{name}"')
         content = content.replace('language: en', f'language: {lang}')
-        (path / "syllabus.yaml").write_text(content)
+        (path / 'syllabus.yaml').write_text(content)
     return path
 
 
-def _make_module(base, subject, module, answers="B", num=1):
-    mod_path = Path(str(base)) / subject / "modules" / module
+def _make_module(base, subject, module, answers='B', num=1):
+    mod_path = Path(str(base)) / subject / 'modules' / module
     mod_path.mkdir(parents=True, exist_ok=True)
-    (mod_path / "lesson.md").write_text(f"# {module}\n\nContent.\n")
+    (mod_path / 'lesson.md').write_text(f'# {module}\n\nContent.\n')
     if isinstance(answers, str):
         answers_l = list(answers)
     else:
@@ -54,12 +55,12 @@ def _make_module(base, subject, module, answers="B", num=1):
             f'  explanation: "Exp{i}."\n'
             f'  difficulty: 1\n  tags: [test]'
         )
-    (mod_path / "quiz.yaml").write_text("\n".join(lines))
+    (mod_path / 'quiz.yaml').write_text('\n'.join(lines))
     return mod_path
 
 
 def _make_deck(subject_dir, cards):
-    p = Path(str(subject_dir)) / "srs" / "deck.json"
+    p = Path(str(subject_dir)) / 'srs' / 'deck.json'
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(cards, indent=2))
     return p
@@ -67,13 +68,14 @@ def _make_deck(subject_dir, cards):
 
 # ── SM-2 Algorithm ───────────────────────────────────────────────
 
+
 def test_sm2_first_correct_q4():
     c = _card()
     learn.sm2_update(c, 4)
     assert c['interval'] == 1
     assert c['repetitions'] == 1
     assert c['ease_factor'] == 2.5
-    print("  sm2_first_correct_q4: OK")
+    print('  sm2_first_correct_q4: OK')
 
 
 def test_sm2_second_correct():
@@ -81,7 +83,7 @@ def test_sm2_second_correct():
     learn.sm2_update(c, 4)
     assert c['interval'] == 6
     assert c['repetitions'] == 2
-    print("  sm2_second_correct: OK")
+    print('  sm2_second_correct: OK')
 
 
 def test_sm2_third_correct_mul_ef():
@@ -89,7 +91,7 @@ def test_sm2_third_correct_mul_ef():
     learn.sm2_update(c, 4)
     assert c['interval'] == round(6 * 2.5)
     assert c['repetitions'] == 3
-    print("  sm2_third_correct_mul_ef: OK")
+    print('  sm2_third_correct_mul_ef: OK')
 
 
 def test_sm2_wrong_reset():
@@ -99,7 +101,7 @@ def test_sm2_wrong_reset():
     assert c['repetitions'] == 0
     expected_ef = 2.5 + (0.1 - 4 * (0.08 + 4 * 0.02))
     assert c['ease_factor'] == round(expected_ef, 2)
-    print("  sm2_wrong_reset: OK")
+    print('  sm2_wrong_reset: OK')
 
 
 def test_sm2_quality_0_ef_drop():
@@ -109,14 +111,14 @@ def test_sm2_quality_0_ef_drop():
     assert c['repetitions'] == 0
     expected_ef = 2.5 + (0.1 - 5 * (0.08 + 5 * 0.02))
     assert c['ease_factor'] == round(expected_ef, 2)
-    print("  sm2_quality_0_ef_drop: OK")
+    print('  sm2_quality_0_ef_drop: OK')
 
 
 def test_sm2_quality_5_increases_ef():
     c = _card(ef=2.5)
     learn.sm2_update(c, 5)
     assert c['ease_factor'] == round(2.5 + 0.1, 2)
-    print("  sm2_quality_5_increases_ef: OK")
+    print('  sm2_quality_5_increases_ef: OK')
 
 
 def test_sm2_quality_3_decreases_ef():
@@ -124,7 +126,7 @@ def test_sm2_quality_3_decreases_ef():
     learn.sm2_update(c, 3)
     expected = 2.5 + (0.1 - 2 * (0.08 + 2 * 0.02))
     assert c['ease_factor'] == round(expected, 2)
-    print("  sm2_quality_3_decreases_ef: OK")
+    print('  sm2_quality_3_decreases_ef: OK')
 
 
 def test_sm2_ef_floor():
@@ -132,7 +134,7 @@ def test_sm2_ef_floor():
     learn.sm2_update(c, 0)
     assert c['ease_factor'] >= 1.3
     assert c['ease_factor'] == 1.3
-    print("  sm2_ef_floor: OK")
+    print('  sm2_ef_floor: OK')
 
 
 def test_sm2_consecutive_wrong_decreases_ef():
@@ -146,7 +148,7 @@ def test_sm2_consecutive_wrong_decreases_ef():
     learn.sm2_update(c, 1)
     assert c['repetitions'] == 0
     assert c['ease_factor'] < ef_after_1
-    print("  sm2_consecutive_wrong_decreases_ef: OK")
+    print('  sm2_consecutive_wrong_decreases_ef: OK')
 
 
 def test_sm2_no_next_review_on_fresh():
@@ -156,7 +158,7 @@ def test_sm2_no_next_review_on_fresh():
     assert 'last_review' in c
     datetime.strptime(c['next_review'], '%Y-%m-%d')
     datetime.strptime(c['last_review'], '%Y-%m-%d')
-    print("  sm2_no_next_review_on_fresh: OK")
+    print('  sm2_no_next_review_on_fresh: OK')
 
 
 def test_sm2_ef_stable_at_2p5():
@@ -164,7 +166,7 @@ def test_sm2_ef_stable_at_2p5():
     for _ in range(10):
         learn.sm2_update(c, 4)
     assert c['ease_factor'] == 2.5
-    print("  sm2_ef_stable_at_2p5: OK")
+    print('  sm2_ef_stable_at_2p5: OK')
 
 
 def test_sm2_interval_grows_with_ef():
@@ -174,10 +176,11 @@ def test_sm2_interval_grows_with_ef():
     c2 = _card(reps=2, interval=6, ef=3.0)
     learn.sm2_update(c2, 4)
     assert c2['interval'] > c['interval']
-    print("  sm2_interval_grows_with_ef: OK")
+    print('  sm2_interval_grows_with_ef: OK')
 
 
 # ── Subject helpers ──────────────────────────────────────────────
+
 
 def test_subject_path():
     with tempfile.TemporaryDirectory() as td:
@@ -185,11 +188,11 @@ def test_subject_path():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            p = learn._subject_path("x")
-            assert str(p) == str(base / "x")
+            p = learn._subject_path('x')
+            assert str(p) == str(base / 'x')
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  subject_path: OK")
+    print('  subject_path: OK')
 
 
 def test_module_path():
@@ -198,11 +201,11 @@ def test_module_path():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            p = learn._module_path("s", "m")
-            assert str(p) == str(base / "s" / "modules" / "m")
+            p = learn._module_path('s', 'm')
+            assert str(p) == str(base / 's' / 'modules' / 'm')
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  module_path: OK")
+    print('  module_path: OK')
 
 
 def test_list_modules():
@@ -211,17 +214,17 @@ def test_list_modules():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
-            (base / "s" / "modules" / "01-a" / "lesson.md").parent.mkdir(parents=True)
-            (base / "s" / "modules" / "01-a" / "lesson.md").write_text("# a")
-            (base / "s" / "modules" / "02-b" / "lesson.md").parent.mkdir(parents=True)
-            (base / "s" / "modules" / "02-b" / "lesson.md").write_text("# b")
-            (base / "s" / "modules" / "03-no-lesson").mkdir(parents=True)
-            mods = learn._list_modules("s")
-            assert mods == ["01-a", "02-b"]
+            _make_subject(base, 's')
+            (base / 's' / 'modules' / '01-a' / 'lesson.md').parent.mkdir(parents=True)
+            (base / 's' / 'modules' / '01-a' / 'lesson.md').write_text('# a')
+            (base / 's' / 'modules' / '02-b' / 'lesson.md').parent.mkdir(parents=True)
+            (base / 's' / 'modules' / '02-b' / 'lesson.md').write_text('# b')
+            (base / 's' / 'modules' / '03-no-lesson').mkdir(parents=True)
+            mods = learn._list_modules('s')
+            assert mods == ['01-a', '02-b']
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  list_modules: OK")
+    print('  list_modules: OK')
 
 
 def test_load_save_deck():
@@ -230,14 +233,14 @@ def test_load_save_deck():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
-            cards = [{"id": "1", "question": "q?"}]
-            learn._save_deck("s", cards)
-            loaded = learn._load_deck("s")
+            _make_subject(base, 's')
+            cards = [{'id': '1', 'question': 'q?'}]
+            learn._save_deck('s', cards)
+            loaded = learn._load_deck('s')
             assert loaded == cards
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  load_save_deck: OK")
+    print('  load_save_deck: OK')
 
 
 def test_load_save_stats():
@@ -246,14 +249,14 @@ def test_load_save_stats():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
-            stats = {"sessions": [{"date": "2024-01-01", "type": "quiz"}]}
-            learn._save_stats("s", stats)
-            loaded = learn._load_stats("s")
+            _make_subject(base, 's')
+            stats = {'sessions': [{'date': '2024-01-01', 'type': 'quiz'}]}
+            learn._save_stats('s', stats)
+            loaded = learn._load_stats('s')
             assert loaded == stats
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  load_save_stats: OK")
+    print('  load_save_stats: OK')
 
 
 def test_record_session():
@@ -262,21 +265,22 @@ def test_record_session():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
-            learn._record_session("s", "quiz", module="m1", score=3, total=5)
-            stats = learn._load_stats("s")
-            assert len(stats["sessions"]) == 1
-            entry = stats["sessions"][0]
-            assert entry["type"] == "quiz"
-            assert entry["module"] == "m1"
-            assert entry["score"] == 3
-            assert entry["total"] == 5
+            _make_subject(base, 's')
+            learn._record_session('s', 'quiz', module='m1', score=3, total=5)
+            stats = learn._load_stats('s')
+            assert len(stats['sessions']) == 1
+            entry = stats['sessions'][0]
+            assert entry['type'] == 'quiz'
+            assert entry['module'] == 'm1'
+            assert entry['score'] == 3
+            assert entry['total'] == 5
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  record_session: OK")
+    print('  record_session: OK')
 
 
 # ── CLI: init ────────────────────────────────────────────────────
+
 
 def test_cmd_init_creates_dirs():
     with tempfile.TemporaryDirectory() as td:
@@ -284,16 +288,16 @@ def test_cmd_init_creates_dirs():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            args = argparse.Namespace(subject="mytopic", lang="en")
+            args = argparse.Namespace(subject='mytopic', lang='en')
             learn.cmd_init(args)
-            sp = base / "mytopic"
+            sp = base / 'mytopic'
             assert sp.exists()
-            assert (sp / "modules").exists()
-            assert (sp / "srs").exists()
-            assert (sp / "syllabus.yaml").exists()
+            assert (sp / 'modules').exists()
+            assert (sp / 'srs').exists()
+            assert (sp / 'syllabus.yaml').exists()
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_init_creates_dirs: OK")
+    print('  cmd_init_creates_dirs: OK')
 
 
 def test_cmd_init_lang():
@@ -302,12 +306,12 @@ def test_cmd_init_lang():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            learn.cmd_init(argparse.Namespace(subject="zhsub", lang="zh"))
-            syllabus = (base / "zhsub" / "syllabus.yaml").read_text()
-            assert "language: zh" in syllabus
+            learn.cmd_init(argparse.Namespace(subject='zhsub', lang='zh'))
+            syllabus = (base / 'zhsub' / 'syllabus.yaml').read_text()
+            assert 'language: zh' in syllabus
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_init_lang: OK")
+    print('  cmd_init_lang: OK')
 
 
 def test_cmd_init_already_exists():
@@ -316,18 +320,19 @@ def test_cmd_init_already_exists():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "dup")
+            _make_subject(base, 'dup')
             try:
-                learn.cmd_init(argparse.Namespace(subject="dup", lang="en"))
-                assert False, "Should have exited"
+                learn.cmd_init(argparse.Namespace(subject='dup', lang='en'))
+                assert False, 'Should have exited'
             except SystemExit:
                 pass
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_init_already_exists: OK")
+    print('  cmd_init_already_exists: OK')
 
 
 # ── CLI: start ────────────────────────────────────────────────────
+
 
 def test_cmd_start_shows_overview():
     with tempfile.TemporaryDirectory() as td:
@@ -335,12 +340,12 @@ def test_cmd_start_shows_overview():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
-            _make_module(base, "s", "01-intro")
-            learn.cmd_start(argparse.Namespace(subject="s"))
+            _make_subject(base, 's')
+            _make_module(base, 's', '01-intro')
+            learn.cmd_start(argparse.Namespace(subject='s'))
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_start_shows_overview: OK")
+    print('  cmd_start_shows_overview: OK')
 
 
 def test_cmd_start_missing_subject_exits():
@@ -350,16 +355,17 @@ def test_cmd_start_missing_subject_exits():
         learn.SUBJECTS_DIR = base
         try:
             try:
-                learn.cmd_start(argparse.Namespace(subject="nonexist"))
-                assert False, "Should have exited"
+                learn.cmd_start(argparse.Namespace(subject='nonexist'))
+                assert False, 'Should have exited'
             except SystemExit:
                 pass
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_start_missing_subject_exits: OK")
+    print('  cmd_start_missing_subject_exits: OK')
 
 
 # ── CLI: explain ──────────────────────────────────────────────────
+
 
 def test_cmd_explain_shows_prompt():
     with tempfile.TemporaryDirectory() as td:
@@ -367,12 +373,12 @@ def test_cmd_explain_shows_prompt():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
-            _make_module(base, "s", "01-intro")
-            learn.cmd_explain(argparse.Namespace(subject="s", module="01-intro"))
+            _make_subject(base, 's')
+            _make_module(base, 's', '01-intro')
+            learn.cmd_explain(argparse.Namespace(subject='s', module='01-intro'))
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_explain_shows_prompt: OK")
+    print('  cmd_explain_shows_prompt: OK')
 
 
 def test_cmd_explain_missing_module_exits():
@@ -381,18 +387,19 @@ def test_cmd_explain_missing_module_exits():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
+            _make_subject(base, 's')
             try:
-                learn.cmd_explain(argparse.Namespace(subject="s", module="nonexist"))
-                assert False, "Should have exited"
+                learn.cmd_explain(argparse.Namespace(subject='s', module='nonexist'))
+                assert False, 'Should have exited'
             except SystemExit:
                 pass
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_explain_missing_module_exits: OK")
+    print('  cmd_explain_missing_module_exits: OK')
 
 
 # ── CLI: create-module ───────────────────────────────────────────
+
 
 def test_cmd_create_module():
     with tempfile.TemporaryDirectory() as td:
@@ -400,16 +407,16 @@ def test_cmd_create_module():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
-            args = argparse.Namespace(subject="s", module_id="01-intro", name=None)
+            _make_subject(base, 's')
+            args = argparse.Namespace(subject='s', module_id='01-intro', name=None)
             learn.cmd_create_module(args)
-            mp = base / "s" / "modules" / "01-intro"
+            mp = base / 's' / 'modules' / '01-intro'
             assert mp.exists()
-            assert (mp / "lesson.md").exists()
-            assert (mp / "quiz.yaml").exists()
+            assert (mp / 'lesson.md').exists()
+            assert (mp / 'quiz.yaml').exists()
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_create_module: OK")
+    print('  cmd_create_module: OK')
 
 
 def test_cmd_create_module_with_name():
@@ -418,15 +425,15 @@ def test_cmd_create_module_with_name():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
+            _make_subject(base, 's')
             learn.cmd_create_module(
-                argparse.Namespace(subject="s", module_id="01-intro", name="Intro")
+                argparse.Namespace(subject='s', module_id='01-intro', name='Intro')
             )
-            lesson = (base / "s" / "modules" / "01-intro" / "lesson.md").read_text()
-            assert "Intro" in lesson
+            lesson = (base / 's' / 'modules' / '01-intro' / 'lesson.md').read_text()
+            assert 'Intro' in lesson
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_create_module_with_name: OK")
+    print('  cmd_create_module_with_name: OK')
 
 
 def test_cmd_create_module_already_exists():
@@ -435,21 +442,22 @@ def test_cmd_create_module_already_exists():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
-            _make_module(base, "s", "01-intro")
+            _make_subject(base, 's')
+            _make_module(base, 's', '01-intro')
             try:
                 learn.cmd_create_module(
-                    argparse.Namespace(subject="s", module_id="01-intro", name=None)
+                    argparse.Namespace(subject='s', module_id='01-intro', name=None)
                 )
-                assert False, "Should have exited"
+                assert False, 'Should have exited'
             except SystemExit:
                 pass
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_create_module_already_exists: OK")
+    print('  cmd_create_module_already_exists: OK')
 
 
 # ── CLI: quiz ────────────────────────────────────────────────────
+
 
 def test_cmd_quiz_creates_cards():
     with tempfile.TemporaryDirectory() as td:
@@ -457,20 +465,22 @@ def test_cmd_quiz_creates_cards():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
-            _make_module(base, "s", "m1", answers="B", num=2)
-            inputs = ["b", "b"]  # both correct → B
-            with patch('builtins.input', side_effect=inputs), \
-                 patch('random.shuffle', lambda x: None):
-                learn.cmd_quiz(argparse.Namespace(subject="s", module="m1"))
-            deck = learn._load_deck("s")
+            _make_subject(base, 's')
+            _make_module(base, 's', 'm1', answers='B', num=2)
+            inputs = ['b', 'b']  # both correct → B
+            with (
+                patch('builtins.input', side_effect=inputs),
+                patch('random.shuffle', lambda x: None),
+            ):
+                learn.cmd_quiz(argparse.Namespace(subject='s', module='m1'))
+            deck = learn._load_deck('s')
             assert len(deck) == 2
             for card in deck:
                 assert card['repetitions'] == 1
                 assert card['interval'] == 1
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_quiz_creates_cards: OK")
+    print('  cmd_quiz_creates_cards: OK')
 
 
 def test_cmd_quiz_wrong_answer_resets():
@@ -479,30 +489,37 @@ def test_cmd_quiz_wrong_answer_resets():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
-            _make_module(base, "s", "m1", answers="B", num=1)
-            existing = [{
-                'id': 'm1.1', 'question': 'Q1?',
-                'options': {'A': 'a', 'B': 'b', 'C': 'c', 'D': 'd'},
-                'answer': 'B', 'explanation': '',
-                'tags': [], 'ease_factor': 2.5,
-                'interval': 30, 'repetitions': 5,
-                'next_review': '2024-01-01', 'last_review': '2024-01-01',
-            }]
-            _make_deck(base / "s", existing)
-            with patch('builtins.input', return_value='a'), \
-                 patch('random.shuffle', lambda x: None):
-                learn.cmd_quiz(argparse.Namespace(subject="s", module="m1"))
-            deck = learn._load_deck("s")
+            _make_subject(base, 's')
+            _make_module(base, 's', 'm1', answers='B', num=1)
+            existing = [
+                {
+                    'id': 'm1.1',
+                    'question': 'Q1?',
+                    'options': {'A': 'a', 'B': 'b', 'C': 'c', 'D': 'd'},
+                    'answer': 'B',
+                    'explanation': '',
+                    'tags': [],
+                    'ease_factor': 2.5,
+                    'interval': 30,
+                    'repetitions': 5,
+                    'next_review': '2024-01-01',
+                    'last_review': '2024-01-01',
+                }
+            ]
+            _make_deck(base / 's', existing)
+            with patch('builtins.input', return_value='a'), patch('random.shuffle', lambda x: None):
+                learn.cmd_quiz(argparse.Namespace(subject='s', module='m1'))
+            deck = learn._load_deck('s')
             assert len(deck) == 1
             assert deck[0]['repetitions'] == 0
             assert deck[0]['interval'] == 1
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_quiz_wrong_answer_resets: OK")
+    print('  cmd_quiz_wrong_answer_resets: OK')
 
 
 # ── CLI: review ──────────────────────────────────────────────────
+
 
 def test_cmd_review_shows_due():
     with tempfile.TemporaryDirectory() as td:
@@ -510,23 +527,32 @@ def test_cmd_review_shows_due():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
-            _make_deck(base / "s", [{
-                'id': 'm1.1', 'question': 'Q?',
-                'options': {'A': 'a', 'B': 'b', 'C': 'c', 'D': 'd'},
-                'answer': 'B', 'explanation': '',
-                'tags': [],
-                'ease_factor': 2.5, 'interval': 0, 'repetitions': 0,
-                'next_review': '2000-01-01', 'last_review': None,
-            }])
-            with patch('builtins.input', return_value='b'), \
-                 patch('random.shuffle', lambda x: None):
-                learn.cmd_review(argparse.Namespace(subject="s"))
-            deck = learn._load_deck("s")
+            _make_subject(base, 's')
+            _make_deck(
+                base / 's',
+                [
+                    {
+                        'id': 'm1.1',
+                        'question': 'Q?',
+                        'options': {'A': 'a', 'B': 'b', 'C': 'c', 'D': 'd'},
+                        'answer': 'B',
+                        'explanation': '',
+                        'tags': [],
+                        'ease_factor': 2.5,
+                        'interval': 0,
+                        'repetitions': 0,
+                        'next_review': '2000-01-01',
+                        'last_review': None,
+                    }
+                ],
+            )
+            with patch('builtins.input', return_value='b'), patch('random.shuffle', lambda x: None):
+                learn.cmd_review(argparse.Namespace(subject='s'))
+            deck = learn._load_deck('s')
             assert deck[0]['repetitions'] == 1
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_review_shows_due: OK")
+    print('  cmd_review_shows_due: OK')
 
 
 def test_cmd_review_no_due():
@@ -535,25 +561,36 @@ def test_cmd_review_no_due():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
+            _make_subject(base, 's')
             far = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d')
-            _make_deck(base / "s", [{
-                'id': 'm1.1', 'question': 'Q?',
-                'options': {'A': 'a', 'B': 'b', 'C': 'c', 'D': 'd'},
-                'answer': 'B', 'explanation': '',
-                'tags': [],
-                'ease_factor': 2.5, 'interval': 365, 'repetitions': 5,
-                'next_review': far, 'last_review': '2024-01-01',
-            }])
-            learn.cmd_review(argparse.Namespace(subject="s"))
-            deck = learn._load_deck("s")
+            _make_deck(
+                base / 's',
+                [
+                    {
+                        'id': 'm1.1',
+                        'question': 'Q?',
+                        'options': {'A': 'a', 'B': 'b', 'C': 'c', 'D': 'd'},
+                        'answer': 'B',
+                        'explanation': '',
+                        'tags': [],
+                        'ease_factor': 2.5,
+                        'interval': 365,
+                        'repetitions': 5,
+                        'next_review': far,
+                        'last_review': '2024-01-01',
+                    }
+                ],
+            )
+            learn.cmd_review(argparse.Namespace(subject='s'))
+            deck = learn._load_deck('s')
             assert deck[0]['interval'] == 365  # unchanged
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_review_no_due: OK")
+    print('  cmd_review_no_due: OK')
 
 
 # ── CLI: stats ───────────────────────────────────────────────────
+
 
 def test_cmd_counts():
     with tempfile.TemporaryDirectory() as td:
@@ -561,30 +598,51 @@ def test_cmd_counts():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            _make_subject(base, "s")
+            _make_subject(base, 's')
             today = datetime.now().strftime('%Y-%m-%d')
-            _make_deck(base / "s", [
-                {'id': 'm1.1', 'question': 'Q1', 'options': {},
-                 'answer': 'A', 'explanation': '', 'tags': [],
-                 'ease_factor': 2.5, 'interval': 1, 'repetitions': 1,
-                 'next_review': today, 'last_review': today},
-                {'id': 'm1.2', 'question': 'Q2', 'options': {},
-                 'answer': 'B', 'explanation': '', 'tags': [],
-                 'ease_factor': 2.5, 'interval': 30, 'repetitions': 10,
-                 'next_review': today, 'last_review': today},
-            ])
-            learn.cmd_stats(argparse.Namespace(subject="s"))
-            deck = learn._load_deck("s")
+            _make_deck(
+                base / 's',
+                [
+                    {
+                        'id': 'm1.1',
+                        'question': 'Q1',
+                        'options': {},
+                        'answer': 'A',
+                        'explanation': '',
+                        'tags': [],
+                        'ease_factor': 2.5,
+                        'interval': 1,
+                        'repetitions': 1,
+                        'next_review': today,
+                        'last_review': today,
+                    },
+                    {
+                        'id': 'm1.2',
+                        'question': 'Q2',
+                        'options': {},
+                        'answer': 'B',
+                        'explanation': '',
+                        'tags': [],
+                        'ease_factor': 2.5,
+                        'interval': 30,
+                        'repetitions': 10,
+                        'next_review': today,
+                        'last_review': today,
+                    },
+                ],
+            )
+            learn.cmd_stats(argparse.Namespace(subject='s'))
+            deck = learn._load_deck('s')
             assert len(deck) == 2
-            due = [c for c in deck
-                   if c.get('next_review', '2000-01-01') <= today]
+            due = [c for c in deck if c.get('next_review', '2000-01-01') <= today]
             assert len(due) == 2
         finally:
             learn.SUBJECTS_DIR = orig
-    print("  cmd_counts: OK")
+    print('  cmd_counts: OK')
 
 
 # ── SM-2 integration: full cycle ─────────────────────────────────
+
 
 def test_sm2_full_cycle():
     c = _card()
@@ -602,7 +660,7 @@ def test_sm2_full_cycle():
     assert c['interval'] == 1 and c['repetitions'] == 0
     learn.sm2_update(c, 4)
     assert c['interval'] == 1 and c['repetitions'] == 1
-    print("  sm2_full_cycle: OK")
+    print('  sm2_full_cycle: OK')
 
 
 # ── Runner ───────────────────────────────────────────────────────

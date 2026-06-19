@@ -35,26 +35,30 @@ HAS_YAML = False
 
 try:
     import markdown as _md
+
     HAS_MARKDOWN = True
 except ImportError:
     pass
 
 try:
     from pygments.formatters import HtmlFormatter
+
     HAS_PYGMENTS = True
 except ImportError:
     pass
 
 try:
     import yaml
+
     HAS_YAML = True
 except ImportError:
     pass
 
 # ── CSS ────────────────────────────────────────────────────────
 
+
 def make_css(use_pygments=False):
-    base = '''/* Clean Modern theme */
+    base = """/* Clean Modern theme */
 @namespace epub "http://www.idpf.org/2007/ops";
 
 body {
@@ -200,7 +204,7 @@ em { font-style: italic; }
 @page { margin: 2em; }
 h1, h2, h3, h4 { page-break-after: avoid; }
 pre, blockquote, table { page-break-inside: avoid; }
-'''
+"""
     if use_pygments:
         try:
             base += HtmlFormatter(style='monokai').get_style_defs('.codehilite')
@@ -212,6 +216,7 @@ pre, blockquote, table { page-break-inside: avoid; }
 
 
 # ── Fallback markdown parser (stdlib only) ─────────────────────
+
 
 def _inline_md(text):
     text = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', r'<img alt="\1" src="\2"/>', text)
@@ -309,7 +314,9 @@ def fallback_parse(text):
         if s.startswith('```'):
             if in_code:
                 lang_attr = f' class="language-{code_lang}"' if code_lang else ''
-                result.append(f'<pre><code{lang_attr}>{escape(chr(10).join(code_buf))}</code></pre>')
+                result.append(
+                    f'<pre><code{lang_attr}>{escape(chr(10).join(code_buf))}</code></pre>'
+                )
                 code_buf = []
                 in_code = False
                 code_lang = None
@@ -399,7 +406,20 @@ def fallback_parse(text):
         para = []
         while i < len(lines):
             s2 = lines[i].strip()
-            if not s2 or s2.startswith('#') or s2.startswith('>') or s2.startswith('- ') or re.match(r'^\d+\.\s', s2) or s2.startswith('```') or s2 == '---' or ('|' in s2 and i + 1 < len(lines) and re.match(r'^[\s|:\-]+$', lines[i + 1].strip())):
+            if (
+                not s2
+                or s2.startswith('#')
+                or s2.startswith('>')
+                or s2.startswith('- ')
+                or re.match(r'^\d+\.\s', s2)
+                or s2.startswith('```')
+                or s2 == '---'
+                or (
+                    '|' in s2
+                    and i + 1 < len(lines)
+                    and re.match(r'^[\s|:\-]+$', lines[i + 1].strip())
+                )
+            ):
                 break
             para.append(lines[i].strip())
             i += 1
@@ -419,23 +439,97 @@ def fallback_parse(text):
 
 # ── XHTML text node escaping ────────────────────────────────────
 
-_KNOWN_HTML_TAGS = frozenset({
-    'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'ul', 'ol', 'li', 'dl', 'dt', 'dd',
-    'strong', 'em', 'b', 'i', 'u', 's', 'strike', 'del', 'ins', 'sub', 'sup', 'small', 'big',
-    'code', 'pre', 'kbd', 'samp', 'tt', 'var', 'q', 'cite', 'abbr', 'acronym',
-    'a', 'img', 'br', 'hr', 'wbr',
-    'div', 'span', 'blockquote',
-    'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'col', 'colgroup',
-    'caption', 'figure', 'figcaption',
-    'section', 'article', 'nav', 'header', 'footer', 'main', 'aside',
-    'details', 'summary', 'dialog',
-
-    'html', 'head', 'body', 'title', 'meta', 'link', 'style', 'script',
-    'nav', 'embed', 'object', 'param', 'source', 'track',
-    'iframe', 'canvas', 'svg', 'math',
-    'ruby', 'rt', 'rp',
-})
+_KNOWN_HTML_TAGS = frozenset(
+    {
+        'p',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'ul',
+        'ol',
+        'li',
+        'dl',
+        'dt',
+        'dd',
+        'strong',
+        'em',
+        'b',
+        'i',
+        'u',
+        's',
+        'strike',
+        'del',
+        'ins',
+        'sub',
+        'sup',
+        'small',
+        'big',
+        'code',
+        'pre',
+        'kbd',
+        'samp',
+        'tt',
+        'var',
+        'q',
+        'cite',
+        'abbr',
+        'acronym',
+        'a',
+        'img',
+        'br',
+        'hr',
+        'wbr',
+        'div',
+        'span',
+        'blockquote',
+        'table',
+        'thead',
+        'tbody',
+        'tfoot',
+        'tr',
+        'th',
+        'td',
+        'col',
+        'colgroup',
+        'caption',
+        'figure',
+        'figcaption',
+        'section',
+        'article',
+        'nav',
+        'header',
+        'footer',
+        'main',
+        'aside',
+        'details',
+        'summary',
+        'dialog',
+        'html',
+        'head',
+        'body',
+        'title',
+        'meta',
+        'link',
+        'style',
+        'script',
+        'nav',
+        'embed',
+        'object',
+        'param',
+        'source',
+        'track',
+        'iframe',
+        'canvas',
+        'svg',
+        'math',
+        'ruby',
+        'rt',
+        'rp',
+    }
+)
 
 
 class _TextNodeEscaper(html.parser.HTMLParser):
@@ -506,11 +600,12 @@ def _escape_text_nodes(html_str):
         return re.sub(
             r'<(\/?[a-zA-Z][a-zA-Z0-9]*\b[^>]*)>',
             lambda m: m.group(0),
-            html_str.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            html_str.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
         )
 
 
 # ── Syntax highlighting (inline styles for EPUB compat) ────────
+
 
 def _highlight_html(html):
     if not HAS_PYGMENTS:
@@ -532,7 +627,9 @@ def _highlight_html(html):
             lang = cm.group(1)
 
         try:
-            lexer = get_lexer_by_name(lang, stripall=True) if lang else guess_lexer(code_text[:1024])
+            lexer = (
+                get_lexer_by_name(lang, stripall=True) if lang else guess_lexer(code_text[:1024])
+            )
         except Exception:
             lexer = TextLexer()
 
@@ -550,6 +647,7 @@ def _highlight_html(html):
 # ── Mermaid diagram rendering ──────────────────────────────────
 
 MERMAID_DEFAULT_MODE = 'api'
+
 
 def _mermaid_render(source, mode, tmp_dir, idx):
     """Render mermaid source to SVG string.
@@ -577,7 +675,9 @@ def _mermaid_render_local(source, tmp_dir, idx):
             f.write(source)
         subprocess.run(
             ['mmdc', '-i', mmd_file, '-o', svg_file, '-q'],
-            capture_output=True, timeout=30, check=True
+            capture_output=True,
+            timeout=30,
+            check=True,
         )
         with open(svg_file, 'r', encoding='utf-8') as f:
             return f.read()
@@ -589,6 +689,7 @@ def _mermaid_render_api(source):
     """Render via mermaid.ink API. Returns SVG string or None."""
     try:
         import urllib.request
+
         encoded = base64.urlsafe_b64encode(source.encode('utf-8')).decode('ascii')
         url = f'https://mermaid.ink/svg/{encoded}'
         req = urllib.request.Request(url, headers={'User-Agent': 'learn-anything/1.0'})
@@ -620,12 +721,15 @@ def _process_mermaid_blocks(html, mode, tmp_dir):
 
     html = re.sub(
         r'<pre><code\s+class="[^"]*\blanguage-mermaid\b[^"]*">(.*?)</code></pre>',
-        replace, html, flags=re.DOTALL
+        replace,
+        html,
+        flags=re.DOTALL,
     )
     return html, svg_files
 
 
 # ── Title formatting + slugify ─────────────────────────────────
+
 
 def _format_title(name):
     """Convert kebab-case or snake_case directory names to Title Case."""
@@ -642,6 +746,7 @@ def _slugify(text):
 
 
 # ── Chapter splitting ──────────────────────────────────────────
+
 
 def split_chapters(text):
     chapters = []
@@ -663,14 +768,17 @@ def split_chapters(text):
 
 # ── Subject markdown assembly ──────────────────────────────────
 
+
 def collect_subject_md(subject_dir):
     modules_dir = os.path.join(subject_dir, 'modules')
     if not os.path.isdir(modules_dir):
-        print(f"Missing: {modules_dir}", file=sys.stderr)
+        print(f'Missing: {modules_dir}', file=sys.stderr)
         sys.exit(1)
 
     parts = []
-    mod_names = sorted(d for d in os.listdir(modules_dir) if os.path.isdir(os.path.join(modules_dir, d)))
+    mod_names = sorted(
+        d for d in os.listdir(modules_dir) if os.path.isdir(os.path.join(modules_dir, d))
+    )
 
     for i, name in enumerate(mod_names):
         mod_path = os.path.join(modules_dir, name)
@@ -709,6 +817,7 @@ def collect_subject_md(subject_dir):
 
 
 # ── Hierarchical ToC navigation ────────────────────────────────
+
 
 def _extract_subheadings(content):
     """Extract (level, title, slug) for h2/h3 within chapter content."""
@@ -771,6 +880,7 @@ def _render_toc_nav(tree, depth=0):
 
 # ── EPUB generation ────────────────────────────────────────────
 
+
 def generate_epub(chapters, output_path, title, author='Learn Anything', mermaid_mode='api'):
     uid = str(uuid.uuid4())
     now = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -786,14 +896,14 @@ def generate_epub(chapters, output_path, title, author='Learn Anything', mermaid
 
     tmp_dir = tempfile.mkdtemp(prefix='opencode-mermaid-')
 
-    cover_html = f'''<?xml version="1.0" encoding="utf-8"?>
+    cover_html = f"""<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head><title>{escape(title)}</title><link rel="stylesheet" type="text/css" href="style.css"/></head>
 <body class="cover">
 <h1>{escape(title)}</h1>
 <p>Generated by Learn Anything — {datetime.now().strftime('%Y-%m-%d')}</p>
-</body></html>'''
+</body></html>"""
     xhtml_files['cover.xhtml'] = cover_html
     manifest.append(('cover.xhtml', 'application/xhtml+xml', 'cover'))
     spine.append(('cover', True))
@@ -829,7 +939,7 @@ def generate_epub(chapters, output_path, title, author='Learn Anything', mermaid
     toc_tree = _build_hierarchical_toc(chapters)
     toc_nav_body = _render_toc_nav(toc_tree) if toc_tree else '<ol>\n</ol>'
 
-    nav_html = f'''<?xml version="1.0" encoding="utf-8"?>
+    nav_html = f"""<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
 <head><title>Table of Contents</title></head>
@@ -839,7 +949,7 @@ def generate_epub(chapters, output_path, title, author='Learn Anything', mermaid
 {toc_nav_body}
 </nav>
 </body>
-</html>'''
+</html>"""
     xhtml_files['nav.xhtml'] = nav_html
     manifest.append(('nav.xhtml', 'application/xhtml+xml', 'nav'))
 
@@ -852,7 +962,7 @@ def generate_epub(chapters, output_path, title, author='Learn Anything', mermaid
     for fname, mtype, pid in manifest:
         opf_manifest += f'<item id="{pid}" href="{fname}" media-type="{mtype}"/>\n'
 
-    opf = f'''<?xml version="1.0" encoding="utf-8"?>
+    opf = f"""<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="book-id">
 <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
 <dc:identifier id="book-id">{escape(uid)}</dc:identifier>
@@ -865,18 +975,18 @@ def generate_epub(chapters, output_path, title, author='Learn Anything', mermaid
 <manifest>
 {opf_manifest}</manifest>
 <spine>
-'''
+"""
     for pid, linear in spine:
         lin = '' if linear else ' linear="no"'
         opf += f'<itemref idref="{pid}"{lin}/>\n'
     opf += '</spine>\n</package>'
 
-    container = '''<?xml version="1.0" encoding="utf-8"?>
+    container = """<?xml version="1.0" encoding="utf-8"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
 <rootfiles>
 <rootfile full-path="EPUB/content.opf" media-type="application/oebps-package+xml"/>
 </rootfiles>
-</container>'''
+</container>"""
 
     try:
         with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -893,6 +1003,7 @@ def generate_epub(chapters, output_path, title, author='Learn Anything', mermaid
 
 
 # ── EPUB verification ──────────────────────────────────────────
+
 
 def verify_epub(path):
     import xml.etree.ElementTree as ET
@@ -1014,6 +1125,7 @@ def verify_epub(path):
 
 # ── CLI ────────────────────────────────────────────────────────
 
+
 def main():
     parser = argparse.ArgumentParser(description='EPUB builder for Learn Anything')
     sub = parser.add_subparsers(dest='command')
@@ -1023,8 +1135,12 @@ def main():
     p_build.add_argument('output')
     p_build.add_argument('--title', default=None)
     p_build.add_argument('--author', default='Learn Anything')
-    p_build.add_argument('--mermaid', default=MERMAID_DEFAULT_MODE, choices=['api', 'local', 'off'],
-                        help='Mermaid rendering mode: api (default), local (mmdc CLI), off (skip)')
+    p_build.add_argument(
+        '--mermaid',
+        default=MERMAID_DEFAULT_MODE,
+        choices=['api', 'local', 'off'],
+        help='Mermaid rendering mode: api (default), local (mmdc CLI), off (skip)',
+    )
 
     p_vfy = sub.add_parser('verify', help='Validate EPUB file structure')
     p_vfy.add_argument('epub_file')
@@ -1034,8 +1150,12 @@ def main():
     p_md.add_argument('output')
     p_md.add_argument('--title', default=None)
     p_md.add_argument('--author', default='Learn Anything')
-    p_md.add_argument('--mermaid', default=MERMAID_DEFAULT_MODE, choices=['api', 'local', 'off'],
-                        help='Mermaid rendering mode: api (default), local (mmdc CLI), off (skip)')
+    p_md.add_argument(
+        '--mermaid',
+        default=MERMAID_DEFAULT_MODE,
+        choices=['api', 'local', 'off'],
+        help='Mermaid rendering mode: api (default), local (mmdc CLI), off (skip)',
+    )
 
     sub.add_parser('css', help='Print CSS for customization')
 
@@ -1048,18 +1168,18 @@ def main():
     if args.command == 'verify':
         epub = args.epub_file
         if not os.path.isfile(epub):
-            print(f"File not found: {epub}", file=sys.stderr)
+            print(f'File not found: {epub}', file=sys.stderr)
             sys.exit(1)
         issues, chapters, size = verify_epub(epub)
-        print(f"EPUB: {epub}")
+        print(f'EPUB: {epub}')
         for severity, msg in issues:
             icon = '✓' if severity == 'OK' else ('⚠' if severity == 'WARN' else '✗')
-            print(f"  {icon} {severity}: {msg}")
+            print(f'  {icon} {severity}: {msg}')
         ch_label = f'{chapters} chapters' if chapters else 'no chapters'
         size_kb = size / 1024
-        print(f"  Summary: {ch_label}, {size_kb:.1f} KB")
+        print(f'  Summary: {ch_label}, {size_kb:.1f} KB')
         fails = sum(1 for s, _ in issues if s == 'FAIL')
-        print(f"  Status: {'VALID' if fails == 0 else f'INVALID ({fails} failures)'}")
+        print(f'  Status: {"VALID" if fails == 0 else f"INVALID ({fails} failures)"}')
         sys.exit(0 if fails == 0 else 1)
 
     if args.command not in ('build', 'from-md'):
@@ -1069,7 +1189,7 @@ def main():
     if args.command == 'build':
         subject_dir = args.subject_dir
         if not os.path.isdir(subject_dir):
-            print(f"Subject directory not found: {subject_dir}", file=sys.stderr)
+            print(f'Subject directory not found: {subject_dir}', file=sys.stderr)
             sys.exit(1)
         title = args.title or _format_title(os.path.basename(os.path.normpath(subject_dir)))
         author = args.author
@@ -1077,11 +1197,11 @@ def main():
         book_md = os.path.join(subject_dir, 'book.md')
         with open(book_md, 'w', encoding='utf-8') as f:
             f.write(md_text)
-        print(f"Intermediate markdown: {book_md}")
+        print(f'Intermediate markdown: {book_md}')
     else:
         md_file = args.markdown_file
         if not os.path.isfile(md_file):
-            print(f"Markdown file not found: {md_file}", file=sys.stderr)
+            print(f'Markdown file not found: {md_file}', file=sys.stderr)
             sys.exit(1)
         title = args.title or _format_title(os.path.splitext(os.path.basename(md_file))[0])
         author = args.author
@@ -1094,7 +1214,7 @@ def main():
         chapters = [(title, md_text)]
     generate_epub(chapters, output, title, author, mermaid_mode=args.mermaid)
     size_kb = os.path.getsize(output) / 1024
-    print(f"EPUB: {output} ({len(chapters)} chapters, {size_kb:.1f} KB)")
+    print(f'EPUB: {output} ({len(chapters)} chapters, {size_kb:.1f} KB)')
 
 
 if __name__ == '__main__':

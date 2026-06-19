@@ -71,7 +71,7 @@ More.
 
 
 def test_extract_subheadings_h1_ignored():
-    content = "# H1 Should Be Ignored\n\n## Real Sub\nContent."
+    content = '# H1 Should Be Ignored\n\n## Real Sub\nContent.'
     items = epub._extract_subheadings(content)
     assert len(items) == 1
     assert items[0][1] == 'Real Sub'
@@ -87,8 +87,8 @@ def test_extract_subheadings_empty():
 
 def test_build_hierarchical_toc():
     chapters = [
-        ('Module 1: Intro', "## Getting Started\nContent.\n### Setup\nMore."),
-        ('Module 2: Advanced', "## Deep Topic\nDetails.\n"),
+        ('Module 1: Intro', '## Getting Started\nContent.\n### Setup\nMore.'),
+        ('Module 2: Advanced', '## Deep Topic\nDetails.\n'),
     ]
     tree = epub._build_hierarchical_toc(chapters)
     assert len(tree) == 2
@@ -123,7 +123,7 @@ def test_build_hierarchical_toc_no_subheadings():
 
 
 def test_build_hierarchical_toc_deep_nesting():
-    chapters = [('Ch1', "## A\n### A.1\n#### A.1.a\n## B\n")]
+    chapters = [('Ch1', '## A\n### A.1\n#### A.1.a\n## B\n')]
     tree = epub._build_hierarchical_toc(chapters)
     assert len(tree) == 1
     children = tree[0][2]
@@ -138,12 +138,20 @@ def test_build_hierarchical_toc_deep_nesting():
 
 def test_render_toc_nav():
     tree = [
-        ('Ch1', 'ch001.xhtml', [
-            ('Sub1', 'ch001.xhtml#sub1', []),
-            ('Sub2', 'ch001.xhtml#sub2', [
-                ('Subsub', 'ch001.xhtml#subsub', []),
-            ]),
-        ]),
+        (
+            'Ch1',
+            'ch001.xhtml',
+            [
+                ('Sub1', 'ch001.xhtml#sub1', []),
+                (
+                    'Sub2',
+                    'ch001.xhtml#sub2',
+                    [
+                        ('Subsub', 'ch001.xhtml#subsub', []),
+                    ],
+                ),
+            ],
+        ),
         ('Ch2', 'ch002.xhtml', []),
     ]
     html = epub._render_toc_nav(tree)
