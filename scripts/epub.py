@@ -779,18 +779,18 @@ def generate_cover_svg(title, author='', description=''):
     pal = _pick_palette(title)
     rng = random.Random(_title_hash(title))
 
-    W, H = 1200, 800
+    w, h = 1200, 800
     svg_parts = []
 
-    svg_parts.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">')
-    svg_parts.append(f'<rect width="{W}" height="{H}" fill="{pal["bg"]}"/>')
+    svg_parts.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">')
+    svg_parts.append(f'<rect width="{w}" height="{h}" fill="{pal["bg"]}"/>')
 
     pattern_type = _title_hash(title) % 4
 
     if pattern_type == 0:
         for _ in range(60):
-            cx = rng.randint(0, W)
-            cy = rng.randint(0, H)
+            cx = rng.randint(0, w)
+            cy = rng.randint(0, h)
             r = rng.randint(20, 120)
             opacity = rng.uniform(0.05, 0.15)
             color = pal['primary'] if rng.random() > 0.5 else pal['secondary']
@@ -801,7 +801,7 @@ def generate_cover_svg(title, author='', description=''):
             amplitude = rng.randint(15, 40)
             freq = rng.uniform(0.003, 0.008)
             points = []
-            for x in range(0, W + 20, 10):
+            for x in range(0, w + 20, 10):
                 dy = y + math.sin(x * freq + i * 0.7) * amplitude
                 points.append(f'{x},{dy:.1f}')
             opacity = rng.uniform(0.06, 0.18)
@@ -809,23 +809,23 @@ def generate_cover_svg(title, author='', description=''):
             svg_parts.append(f'<polyline points="{" ".join(points)}" fill="none" stroke="{color}" stroke-width="2" opacity="{opacity}"/>')
     elif pattern_type == 2:
         for _ in range(8):
-            x1 = rng.randint(-100, W + 100)
-            y1 = rng.randint(-100, H + 100)
-            x2 = rng.randint(-100, W + 100)
-            y2 = rng.randint(-100, H + 100)
+            x1 = rng.randint(-100, w + 100)
+            y1 = rng.randint(-100, h + 100)
+            x2 = rng.randint(-100, w + 100)
+            y2 = rng.randint(-100, h + 100)
             color = pal['primary'] if rng.random() > 0.4 else pal['secondary']
             opacity = rng.uniform(0.04, 0.12)
             svg_parts.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{color}" stroke-width="{rng.randint(1, 4)}" opacity="{opacity}"/>')
         for _ in range(25):
-            cx = rng.randint(0, W)
-            cy = rng.randint(0, H)
+            cx = rng.randint(0, w)
+            cy = rng.randint(0, h)
             r = rng.randint(3, 8)
             svg_parts.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{pal["accent"]}" opacity="0.3"/>')
     else:
         cols = rng.randint(8, 14)
         rows = rng.randint(6, 10)
-        cell_w = W // cols
-        cell_h = H // rows
+        cell_w = w // cols
+        cell_h = h // rows
         for r in range(rows):
             for c in range(cols):
                 if rng.random() > 0.6:
@@ -839,8 +839,8 @@ def generate_cover_svg(title, author='', description=''):
                     else:
                         svg_parts.append(f'<circle cx="{x}" cy="{y}" r="{sz // 2}" fill="{color}" opacity="{opacity}"/>')
 
-    overlay_y = H * 0.35
-    svg_parts.append(f'<rect x="0" y="{overlay_y - 20}" width="{W}" height="{H - overlay_y + 20}" fill="{pal["bg"]}" opacity="0.75"/>')
+    overlay_y = h * 0.35
+    svg_parts.append(f'<rect x="0" y="{overlay_y - 20}" width="{w}" height="{h - overlay_y + 20}" fill="{pal["bg"]}" opacity="0.75"/>')
 
     accent_line_y = overlay_y
     svg_parts.append(f'<rect x="100" y="{accent_line_y}" width="80" height="4" fill="{pal["primary"]}" rx="2"/>')
@@ -848,20 +848,20 @@ def generate_cover_svg(title, author='', description=''):
     title_font = 54
     title_x = 100
     title_y = accent_line_y + 60
-    title_lines = _wrap_text(title.upper(), W - 200, title_font)
+    title_lines = _wrap_text(title.upper(), w - 200, title_font)
     for i, line in enumerate(title_lines):
         svg_parts.append(f'<text x="{title_x}" y="{title_y + i * 65}" font-family="Georgia, serif" font-size="{title_font}" font-weight="bold" fill="{pal["text"]}">{escape(line)}</text>')
 
     desc_font = 22
     desc_y = title_y + len(title_lines) * 65 + 20
     if description:
-        desc_lines = _wrap_text(description, W - 200, desc_font)
+        desc_lines = _wrap_text(description, w - 200, desc_font)
         for i, line in enumerate(desc_lines[:3]):
             svg_parts.append(f'<text x="{title_x}" y="{desc_y + i * 30}" font-family="Georgia, serif" font-size="{desc_font}" fill="{pal["text"]}" opacity="0.7">{escape(line)}</text>')
         desc_y += len(desc_lines[:3]) * 30 + 10
 
     if author:
-        svg_parts.append(f'<text x="{title_x}" y="{H - 60}" font-family="Arial, sans-serif" font-size="18" fill="{pal["text"]}" opacity="0.5">{escape(author)}</text>')
+        svg_parts.append(f'<text x="{title_x}" y="{h - 60}" font-family="Arial, sans-serif" font-size="18" fill="{pal["text"]}" opacity="0.5">{escape(author)}</text>')
 
     svg_parts.append('</svg>')
     return '\n'.join(svg_parts)
