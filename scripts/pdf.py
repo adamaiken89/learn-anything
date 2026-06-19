@@ -26,12 +26,14 @@ HAS_PANDOC = False
 
 try:
     import weasyprint
+
     HAS_WEASYPRINT = True
 except ImportError:
     pass
 
 try:
     import yaml
+
     HAS_YAML = True
 except ImportError:
     pass
@@ -298,9 +300,7 @@ class RawPDF:
         self._add_content_pages(text_lines)
 
         kids = ' '.join(f'{p} 0 R' for p in self.pages)
-        pages_id = self._obj(
-            f'<< /Type /Pages /Kids [{kids}] /Count {len(self.pages)} >>'
-        )
+        pages_id = self._obj(f'<< /Type /Pages /Kids [{kids}] /Count {len(self.pages)} >>')
 
         self._obj(
             f'<< /Title ({_escape_pdf(self.title)})'
@@ -309,10 +309,7 @@ class RawPDF:
             f' /CreationDate ({datetime.now().strftime("%Y%m%d%H%M%S")}) >>'
         )
 
-        self._obj(
-            f'<< /Type /Catalog /Pages {pages_id} 0 R'
-            f' /Lang (en-US) >>'
-        )
+        self._obj(f'<< /Type /Catalog /Pages {pages_id} 0 R /Lang (en-US) >>')
 
         return '%PDF-1.4\n' + '\n'.join(self.objs) + '\n%%EOF\n'
 
@@ -321,10 +318,12 @@ class RawPDF:
         author = self.author[:60]
         x = self.MARGIN_L
         y = self.PAGE_H // 2 + 40
-        self._render_page([
-            ('title', x, y, title),
-            ('text', x, y - 30, f'by {author}', 1),
-        ])
+        self._render_page(
+            [
+                ('title', x, y, title),
+                ('text', x, y - 30, f'by {author}', 1),
+            ]
+        )
 
     def _add_content_pages(self, text_lines):
         x = self.MARGIN_L
@@ -340,9 +339,7 @@ class RawPDF:
                 y = self.PAGE_H - self.MARGIN_T
 
         for line in text_lines:
-            is_heading = line and (line.isupper() and len(line) > 2) or (
-                line.startswith('## ')
-            )
+            is_heading = line and (line.isupper() and len(line) > 2) or (line.startswith('## '))
             is_sep = line.startswith('──')
             is_code = line.startswith('  ')
             is_empty = not line.strip()
@@ -356,7 +353,9 @@ class RawPDF:
                     flush()
                 continue
 
-            for wrapped in textwrap.wrap(line, width=self.CHARS_PER_LINE) if not is_code else [line]:
+            for wrapped in (
+                textwrap.wrap(line, width=self.CHARS_PER_LINE) if not is_code else [line]
+            ):
                 if y < max_y:
                     flush()
 
@@ -371,6 +370,7 @@ class RawPDF:
 
         if page_items:
             self._render_page(page_items)
+
 
 def _generate_raw_pdf(md_text, output_path, title='Document', author='Learn Anything'):
     plain_lines = _md_to_plain_lines(md_text)
@@ -404,20 +404,26 @@ def _make_html(md_text, title='Document', author='Learn Anything'):
     lines.append(f'<meta charset="utf-8"><title>{html_escape(title)}</title>')
     lines.append(f'<meta name="author" content="{html_escape(author)}">')
     lines.append('<style>')
-    lines.append('body { font-family: Georgia, serif; max-width: 38em; margin: 2em auto; '
-                 'line-height: 1.7; color: #333; padding: 0 1em; }')
+    lines.append(
+        'body { font-family: Georgia, serif; max-width: 38em; margin: 2em auto; '
+        'line-height: 1.7; color: #333; padding: 0 1em; }'
+    )
     lines.append('h1, h2, h3 { font-family: Helvetica, Arial, sans-serif; color: #111; }')
     lines.append('h1 { font-size: 1.6em; border-bottom: 2px solid #0366d6; }')
     lines.append('h2 { font-size: 1.3em; border-bottom: 1px solid #ddd; }')
-    lines.append('pre { background: #f5f5f5; padding: 1em; border-radius: 4px; '
-                 'font-size: 0.85em; overflow-x: auto; }')
+    lines.append(
+        'pre { background: #f5f5f5; padding: 1em; border-radius: 4px; '
+        'font-size: 0.85em; overflow-x: auto; }'
+    )
     lines.append('code { font-family: "SF Mono", Consolas, monospace; }')
     lines.append('p code { background: #f0f0f0; padding: 0.15em 0.3em; border-radius: 3px; }')
     lines.append('table { border-collapse: collapse; width: 100%; margin: 1em 0; }')
     lines.append('th, td { border: 1px solid #ddd; padding: 0.4em 0.6em; text-align: left; }')
     lines.append('th { background: #f0f0f0; }')
-    lines.append('blockquote { border-left: 4px solid #0366d6; margin: 1em 0; '
-                 'padding: 0.5em 1em; color: #555; background: #f8f9fa; }')
+    lines.append(
+        'blockquote { border-left: 4px solid #0366d6; margin: 1em 0; '
+        'padding: 0.5em 1em; color: #555; background: #f8f9fa; }'
+    )
     lines.append('</style>')
     lines.append('</head><body>')
 

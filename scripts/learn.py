@@ -652,7 +652,8 @@ def cmd_pdf(args):
 
     print(f'{CYAN}Building PDF: {subject}{NC}')
     cmd = [sys.executable, str(pdf_script), 'build', str(spath), output] + _pdf_extra_args(args)
-    result = subprocess.run(cmd,
+    result = subprocess.run(
+        cmd,
         capture_output=True,
         text=True,
     )
@@ -690,7 +691,8 @@ def cmd_pdf_regen(args):
 
     print(f'{CYAN}Regenerating PDF from cached markdown: {subject}{NC}')
     cmd = [sys.executable, str(pdf_script), 'from-md', str(book_md), output] + _pdf_extra_args(args)
-    result = subprocess.run(cmd,
+    result = subprocess.run(
+        cmd,
         capture_output=True,
         text=True,
     )
