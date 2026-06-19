@@ -10,21 +10,7 @@ env:
   PYTHON_VERSION: "3.10"
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - name: Install ruff
-        run: pip install ruff
-      - name: Lint
-        run: ruff check --output-format=github scripts/ tests/
-      - name: Format check
-        run: ruff format --check scripts/ tests/
-
-  test:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +18,10 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
-        run: pip install pyyaml markdown pygments
+        run: pip install ruff pyyaml markdown pygments
+      - name: Lint
+        run: ruff check --output-format=github scripts/ tests/
+      - name: Format check
+        run: ruff format --check scripts/ tests/
       - name: Run tests
         run: bash tests/run.sh
