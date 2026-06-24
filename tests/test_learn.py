@@ -188,7 +188,7 @@ def test_subject_path():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            p = learn._subject_path('x')
+            p = learn._topic_path('x')
             assert str(p) == str(base / 'x')
         finally:
             learn.SUBJECTS_DIR = orig
@@ -288,7 +288,7 @@ def test_cmd_init_creates_dirs():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            args = argparse.Namespace(subject='mytopic', lang='en')
+            args = argparse.Namespace(topic='mytopic', lang='en')
             learn.cmd_init(args)
             sp = base / 'mytopic'
             assert sp.exists()
@@ -306,7 +306,7 @@ def test_cmd_init_lang():
         orig = learn.SUBJECTS_DIR
         learn.SUBJECTS_DIR = base
         try:
-            learn.cmd_init(argparse.Namespace(subject='zhsub', lang='zh'))
+            learn.cmd_init(argparse.Namespace(topic='zhsub', lang='zh'))
             syllabus = (base / 'zhsub' / 'syllabus.yaml').read_text()
             assert 'language: zh' in syllabus
         finally:
@@ -322,7 +322,7 @@ def test_cmd_init_already_exists():
         try:
             _make_subject(base, 'dup')
             try:
-                learn.cmd_init(argparse.Namespace(subject='dup', lang='en'))
+                learn.cmd_init(argparse.Namespace(topic='dup', lang='en'))
                 assert False, 'Should have exited'
             except SystemExit:
                 pass
@@ -342,7 +342,7 @@ def test_cmd_start_shows_overview():
         try:
             _make_subject(base, 's')
             _make_module(base, 's', '01-intro')
-            learn.cmd_start(argparse.Namespace(subject='s'))
+            learn.cmd_start(argparse.Namespace(topic='s'))
         finally:
             learn.SUBJECTS_DIR = orig
     print('  cmd_start_shows_overview: OK')
@@ -355,7 +355,7 @@ def test_cmd_start_missing_subject_exits():
         learn.SUBJECTS_DIR = base
         try:
             try:
-                learn.cmd_start(argparse.Namespace(subject='nonexist'))
+                learn.cmd_start(argparse.Namespace(topic='nonexist'))
                 assert False, 'Should have exited'
             except SystemExit:
                 pass
@@ -375,7 +375,7 @@ def test_cmd_explain_shows_prompt():
         try:
             _make_subject(base, 's')
             _make_module(base, 's', '01-intro')
-            learn.cmd_explain(argparse.Namespace(subject='s', module='01-intro'))
+            learn.cmd_explain(argparse.Namespace(topic='s', module='01-intro'))
         finally:
             learn.SUBJECTS_DIR = orig
     print('  cmd_explain_shows_prompt: OK')
@@ -389,7 +389,7 @@ def test_cmd_explain_missing_module_exits():
         try:
             _make_subject(base, 's')
             try:
-                learn.cmd_explain(argparse.Namespace(subject='s', module='nonexist'))
+                learn.cmd_explain(argparse.Namespace(topic='s', module='nonexist'))
                 assert False, 'Should have exited'
             except SystemExit:
                 pass
@@ -408,7 +408,7 @@ def test_cmd_create_module():
         learn.SUBJECTS_DIR = base
         try:
             _make_subject(base, 's')
-            args = argparse.Namespace(subject='s', module_id='01-intro', name=None)
+            args = argparse.Namespace(topic='s', module_id='01-intro', name=None)
             learn.cmd_create_module(args)
             mp = base / 's' / 'modules' / '01-intro'
             assert mp.exists()
@@ -427,7 +427,7 @@ def test_cmd_create_module_with_name():
         try:
             _make_subject(base, 's')
             learn.cmd_create_module(
-                argparse.Namespace(subject='s', module_id='01-intro', name='Intro')
+                argparse.Namespace(topic='s', module_id='01-intro', name='Intro')
             )
             lesson = (base / 's' / 'modules' / '01-intro' / 'lesson.md').read_text()
             assert 'Intro' in lesson
@@ -446,7 +446,7 @@ def test_cmd_create_module_already_exists():
             _make_module(base, 's', '01-intro')
             try:
                 learn.cmd_create_module(
-                    argparse.Namespace(subject='s', module_id='01-intro', name=None)
+                    argparse.Namespace(topic='s', module_id='01-intro', name=None)
                 )
                 assert False, 'Should have exited'
             except SystemExit:
@@ -472,7 +472,7 @@ def test_cmd_quiz_creates_cards():
                 patch('builtins.input', side_effect=inputs),
                 patch('random.shuffle', lambda x: None),
             ):
-                learn.cmd_quiz(argparse.Namespace(subject='s', module='m1'))
+                learn.cmd_quiz(argparse.Namespace(topic='s', module='m1'))
             deck = learn._load_deck('s')
             assert len(deck) == 2
             for card in deck:
@@ -508,7 +508,7 @@ def test_cmd_quiz_wrong_answer_resets():
             ]
             _make_deck(base / 's', existing)
             with patch('builtins.input', return_value='a'), patch('random.shuffle', lambda x: None):
-                learn.cmd_quiz(argparse.Namespace(subject='s', module='m1'))
+                learn.cmd_quiz(argparse.Namespace(topic='s', module='m1'))
             deck = learn._load_deck('s')
             assert len(deck) == 1
             assert deck[0]['repetitions'] == 0
@@ -547,7 +547,7 @@ def test_cmd_review_shows_due():
                 ],
             )
             with patch('builtins.input', return_value='b'), patch('random.shuffle', lambda x: None):
-                learn.cmd_review(argparse.Namespace(subject='s'))
+                learn.cmd_review(argparse.Namespace(topic='s'))
             deck = learn._load_deck('s')
             assert deck[0]['repetitions'] == 1
         finally:
@@ -581,7 +581,7 @@ def test_cmd_review_no_due():
                     }
                 ],
             )
-            learn.cmd_review(argparse.Namespace(subject='s'))
+            learn.cmd_review(argparse.Namespace(topic='s'))
             deck = learn._load_deck('s')
             assert deck[0]['interval'] == 365  # unchanged
         finally:
@@ -631,7 +631,7 @@ def test_cmd_counts():
                     },
                 ],
             )
-            learn.cmd_stats(argparse.Namespace(subject='s'))
+            learn.cmd_stats(argparse.Namespace(topic='s'))
             deck = learn._load_deck('s')
             assert len(deck) == 2
             due = [c for c in deck if c.get('next_review', '2000-01-01') <= today]

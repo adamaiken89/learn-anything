@@ -62,35 +62,9 @@ NC = cval(C.NC)
 
 # ── SM-2 Algorithm ─────────────────────────────────────────────
 
+import sm2 as _sm2
 
-def sm2_update(card, quality):
-    """Update card's SM-2 fields given quality (0-5). Returns updated card."""
-    ef = card.get('ease_factor', 2.5)
-    rep = card.get('repetitions', 0)
-    interval = card.get('interval', 0)
-
-    if quality >= 3:
-        if rep == 0:
-            interval = 1
-        elif rep == 1:
-            interval = 6
-        else:
-            interval = round(interval * ef)
-        rep += 1
-    else:
-        rep = 0
-        interval = 1
-
-    ef = ef + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
-    if ef < 1.3:
-        ef = 1.3
-
-    card['ease_factor'] = round(ef, 2)
-    card['repetitions'] = rep
-    card['interval'] = interval
-    card['next_review'] = (datetime.now() + timedelta(days=interval)).strftime('%Y-%m-%d')
-    card['last_review'] = datetime.now().strftime('%Y-%m-%d')
-    return card
+sm2_update = _sm2.update
 
 
 # ── Topic helpers ───────────────────────────────────────────────
@@ -103,8 +77,8 @@ def _topic_path(topic):
 def _check_topic(topic):
     path = _topic_path(topic)
     if not path.exists():
-        (path / 'modules').mkdir(parents=True, exist_ok=True)
-        (path / 'srs').mkdir(parents=True, exist_ok=True)
+        print(f'{RED}Topic "{topic}" not found. Run: learn.py init {topic}{NC}')
+        sys.exit(1)
     return path
 
 
@@ -181,6 +155,9 @@ def cmd_init(args):
     topic = args.topic
     lang = args.lang or 'en'
     path = _topic_path(topic)
+    if path.exists():
+        print(f'{RED}Topic "{topic}" already exists. Pick a different name.{NC}')
+        sys.exit(1)
 
     (path / 'modules').mkdir(parents=True, exist_ok=True)
     (path / 'srs').mkdir(parents=True, exist_ok=True)
