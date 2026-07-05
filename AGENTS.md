@@ -9,6 +9,11 @@ learn-anything/
 ├── README.md          # General documentation
 ├── LICENSE            # MIT
 ├── AGENTS.md          # This file — agent modification guide
+├── learn-anything-schema/  # Shared JSON schemas (Phase 1)
+│   ├── package.json
+│   ├── schemas/       # JSON Schema files (deck, card, quiz, syllabus, stats, feedback)
+│   ├── types/         # TypeScript type definitions
+│   └── validate/      # Python + TypeScript validators
 ├── scripts/
 │   ├── learn.sh       # Thin bash wrapper → delegates to learn.py
 │   ├── learn.py       # Python CLI (SM-2, quiz engine, all commands)
@@ -62,11 +67,19 @@ Python CLI. Key subsystems:
 | `cmd_init`          | Create subject directory, copy syllabus template                |
 | `cmd_start`         | Show subject overview + module list                             |
 | `cmd_create_module` | Create module from template                                     |
-| `cmd_quiz`          | Parse YAML, shuffle, display MCQs, update SRS deck              |
+| `cmd_quiz`          | Parse YAML, shuffle, display MCQs, update SRS deck (adaptive, weak-only flags) |
 | `cmd_review`        | SM-2 review: due cards, scoring, interval calc                  |
 | `cmd_stats`         | Card counts, due today, mastery rate, avg ease, session history |
 | `cmd_explain`       | Feynman technique prompt with gap detection guide               |
 | `cmd_export`        | Export deck to CSV for Anki import                              |
+| `cmd_rate`          | Rate module clarity (1-5 stars), save to feedback.json          |
+| `cmd_flag`          | Report content error (wrong/outdated/confusing)                 |
+| `cmd_feedback`      | Aggregate feedback: avg ratings, flag counts, suggest modules   |
+| `cmd_analytics`     | Retention analytics: mastery breakdown, session history, weak modules |
+| `cmd_forecast`      | Forgetting forecast: cards due now/week/month                   |
+| `cmd_study_plan`    | Optimal study session: due + weak cards, skip mastered          |
+| `cmd_sync`          | Export deck to Reader directory (~/.coursereader/subjects/)     |
+| `cmd_sync_pull`     | Import deck from Reader directory                               |
 | `cmd_epub`          | Generate EPUB book from all modules + quizzes                   |
 | `cmd_epub_regen`    | Regenerate EPUB from cached `book.md`                           |
 | `cmd_epub_verify`   | Validate EPUB structure                                         |
@@ -147,12 +160,75 @@ Apply all 8 rules to every generated module. If content violates any rule, rewri
 - **epub.py**: `generate_cover_svg(title, author, description)` function (~100 lines)
 - Zero dependencies — uses `hashlib`, `math`, `random` from stdlib.
 - Deterministic from title: SHA256 hash → palette selection (8 dark-theme palettes), pattern type (4: circles, sine waves, radial, grid).
-- Cover layout: 1200×800 SVG, accent line, uppercase wrapped title, description (3 lines max, 70% opacity), author at bottom.
-- Stored as `cover.xhtml` in EPUB with `image/svg+xml` media type.
+- Cover layout: 1264×1680 SVG (portrait, 3:4 ratio, matches Kobo Libra 2 / Kindle Oasis 7"), accent line, uppercase wrapped title, description (3 lines max, 70% opacity), author at bottom.
+- Stored as `cover.svg` in EPUB with `image/svg+xml` media type.
 - OPF: `<meta name="cover" content="cover-image"/>`.
 - CLI flags: `--description` on `build`/`from-md` (epub.py) and `epub`/`epub-regen` (learn.py).
 - learn.py passes `--description` through to epub.py subprocess.
 - SKILL.md §5 documents flag. AGENTS.md documents here.
+
+### Shared JSON Schema Package (added 2026-07)
+
+- **learn-anything-schema/**: Standalone package with JSON Schema definitions for all shared data types.
+- Schemas: `deck.json`, `card.json`, `quiz.json`, `question.json`, `syllabus.json`, `stats.json`, `feedback.json`.
+- TypeScript types in `types/` directory, Python validator in `validate/python/validate.py`.
+- Both CLI and Desktop reader validate against these schemas.
+- Key conventions: camelCase fields, card ID = `{courseId}-{moduleId}-{questionId}`, quiz keys = lowercase a-d, deck = `{cards: Record<string, Card>}`.
+- Version: 1.0.0. Breaking changes bump major version.
+- Usage: `python validate/python/validate.py deck path/to/deck.json`
+
+### Format Alignment with Reader (added 2026-07)
+
+- **Decision**: CLI deck format aligned to match [learn-anything-reader](https://github.com/adamaiken89/learn-anything-reader) desktop app.
+- **Deck format**: `{cards: {"id": card}}` (Record<string, Card>), NOT array.
+- **Card ID**: `{courseId}-{moduleId}-{questionId}` (e.g., `python-01-intro-1.1`).
+- **Fields**: All camelCase — `easeFactor`, `nextReviewDate`, `lastReviewed`, `isStarred`, `questionId`, `moduleId`, `courseId`.
+- **Answer format**: `{key}. {text}` (e.g., `a. A programming language`).
+- **SM-2 in `sm2.py`**: Updated to use camelCase fields (easeFactor, nextReviewDate, lastReviewed).
+- **Auto-migration**: `_load_deck()` detects old array-format decks and converts to new format via `_migrate_deck_array()`.
+- **`_find_card()`**: Helper for flexible card lookup by questionId across different ID formats.
+- **CLI commands updated**: quiz, review, stats, export, analytics, forecast, study-plan — all use dict-based deck and camelCase.
+
+### Adaptive Quiz Engine (added 2026-07)
+
+- `cmd_quiz` gained `--adaptive` and `--weak-only` flags.
+- `--adaptive`: weighted sampling by easeFactor, difficulty ramp (easy→medium→hard), streak skip (3 correct → advance), anti-repeat per session.
+- `--weak-only`: only quiz on cards with easeFactor < 2.0.
+- Pedagogy: Desirable Difficulties (adaptive difficulty), Marva Collins (targeted repetition).
+
+### Feedback Loop (added 2026-07)
+
+- `cmd_rate <topic> <module> <1-5>`: learner rates module clarity, saved to `srs/feedback.json`.
+- `cmd_flag <topic> <module> <type>`: report content error (wrong/outdated/confusing).
+- `cmd_feedback <topic>`: aggregate ratings per module, flag counts, suggest modules to revisit.
+- Pedagogy: Marva Collins (rigor through feedback), content quality improvement loop.
+
+### Retention Analytics (added 2026-07)
+
+- `cmd_analytics <topic>`: mastery breakdown (new/learning/mastered), session history, weak modules by ease factor.
+- `cmd_forecast <topic>`: cards due now/this week/this month/later, grouped by module.
+- `cmd_study_plan <topic>`: optimal session composition (due + weak, skip mastered, 15-25 card target).
+- Pedagogy: Desirable Difficulties (spacing via forecast), Feynman (weak area identification).
+
+### Cross-Tool Sync (added 2026-07)
+
+- `cmd_sync <topic>`: export CLI deck + modules to Reader directory (`~/.coursereader/subjects/<topic>/`).
+- `cmd_sync_pull <topic>`: import Reader deck to CLI format.
+- Both commands validate format compatibility (already aligned via Phase 3).
+- `--reader-path` flag to override default Reader location.
+- Copies: deck.json, modules (lesson.md + quiz.yaml), syllabus.yaml.
+
+### Dynamic Depth & Pre-test (added 2026-07)
+
+- `cmd_init` gained `--depth` and `--pretest` flags.
+- `--depth survey|standard|deep`: dynamically generates syllabus with different module counts.
+  - `survey`: ~6 modules, ~12 hours. Quick overview.
+  - `standard`: ~18 modules, ~40 hours. Default.
+  - `deep`: ~28 modules, ~75 hours. Comprehensive.
+- `--pretest`: after syllabus creation, asks 1 question per module to identify known content. Marks known modules for removal.
+- `_generate_syllabus()`: builds skeleton YAML from preset (module count, time range, prerequisites DAG).
+- `_run_pretest()`: interactive input loop, reports skip count.
+- Pedagogy: Desirable Difficulties (right-sized challenge), Marva Collins (no wasted time on known material).
 
 ## Testing
 
@@ -161,22 +237,22 @@ Apply all 8 rules to every generated module. If content violates any rule, rewri
 mkdir test-course && cd test-course
 
 # Initialize
-../scripts/learn.sh python init
+../scripts/learn.sh init python
 
 # Create test module
-../scripts/learn.sh python create-module 01-intro
+../scripts/learn.sh create-module python 01-intro
 
 # Run quiz
-../scripts/learn.sh python quiz 01-intro
+../scripts/learn.sh quiz python 01-intro
 
 # Run review
-../scripts/learn.sh python review
+../scripts/learn.sh review python
 
 # Check stats (includes session history)
-../scripts/learn.sh python stats
+../scripts/learn.sh stats python
 
 # Export to Anki CSV
-../scripts/learn.sh python export
+../scripts/learn.sh export python
 
 # Cleanup
 cd .. && rm -rf test-course

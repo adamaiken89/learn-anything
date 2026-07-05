@@ -122,19 +122,22 @@ Full templates in `templates/`. Key: syllabus.yaml (20-module skeleton), module.
 ## 5. CLI
 
 ```
-learn.sh <topic> init [lang]                 # Optional: Initialize topic dir with syllabus template
-learn.sh <topic> start                       # Overview + module list
-learn.sh <topic> create-module <id>          # Create module from template
-learn.sh <topic> quiz <module>               # MCQ drill
-learn.sh <topic> explain <module>            # Feynman prompt guide
-learn.sh <topic> review                      # SM-2 spaced repetition
-learn.sh <topic> stats                       # Progress + retention
-learn.sh <topic> export                      # Anki CSV export
-learn.sh <topic> epub [file] [--local]       # Export to EPUB book (--local: use mmdc CLI)
-learn.sh <topic> epub-regen [file] [--local] # Regenerate EPUB from cached markdown
-learn.sh <topic> epub-verify [file]          # Validate EPUB structure
-learn.sh <topic> pdf [file] [--engine]       # Export to PDF (auto/weasyprint/pandoc/raw)
-learn.sh <topic> pdf-regen [file] [--engine] # Regenerate PDF from cached book.md
+learn.sh init <topic> [lang] [--depth survey|standard|deep] [--pretest]
+                                         # Initialize topic dir with syllabus template
+                                         # --depth: survey (~6), standard (~18), deep (~28) modules
+                                         # --pretest: test first, skip known content
+learn.sh start <topic>                       # Overview + module list
+learn.sh create-module <topic> <id>          # Create module from template
+learn.sh quiz <topic> <module>               # MCQ drill
+learn.sh explain <topic> <module>            # Feynman prompt guide
+learn.sh review <topic>                      # SM-2 spaced repetition
+learn.sh stats <topic>                       # Progress + retention
+learn.sh export <topic>                      # Anki CSV export
+learn.sh epub <topic> [file] [--local]       # Export to EPUB book (--local: use mmdc CLI)
+learn.sh epub-regen <topic> [file] [--local] # Regenerate EPUB from cached markdown
+learn.sh epub-verify <topic> [file]          # Validate EPUB structure
+learn.sh pdf <topic> [file] [--engine]       # Export to PDF (auto/weasyprint/pandoc/raw)
+learn.sh pdf-regen <topic> [file] [--engine] # Regenerate PDF from cached book.md
 ```
 
 ## 6. Cost Model (DeepSeek V4 Flash)

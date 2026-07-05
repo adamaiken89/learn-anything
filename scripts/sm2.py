@@ -4,8 +4,12 @@ from datetime import datetime, timedelta
 
 
 def update(card, quality):
-    """Update card's SM-2 fields given quality (0-5). Returns updated card."""
-    ef = card.get('ease_factor', 2.5)
+    """Update card's SM-2 fields given quality (0-5). Returns updated card.
+
+    Uses camelCase fields to match Reader format:
+    easeFactor, interval, repetitions, nextReviewDate, lastReviewed
+    """
+    ef = card.get('easeFactor', 2.5)
     rep = card.get('repetitions', 0)
     interval = card.get('interval', 0)
 
@@ -25,9 +29,9 @@ def update(card, quality):
     if ef < 1.3:
         ef = 1.3
 
-    card['ease_factor'] = round(ef, 2)
+    card['easeFactor'] = round(ef, 2)
     card['repetitions'] = rep
     card['interval'] = interval
-    card['next_review'] = (datetime.now() + timedelta(days=interval)).strftime('%Y-%m-%d')
-    card['last_review'] = datetime.now().strftime('%Y-%m-%d')
+    card['nextReviewDate'] = (datetime.now() + timedelta(days=interval)).strftime('%Y-%m-%d')
+    card['lastReviewed'] = datetime.now().strftime('%Y-%m-%d')
     return card
