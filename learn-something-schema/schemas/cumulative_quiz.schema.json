@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://learn-something.dev/schemas/cumulative_quiz.json",
+  "title": "Cumulative Quiz",
+  "description": "Schema for cumulative_quiz.yaml — cross-module quiz covering 3-5 modules",
+  "type": "array",
+  "items": { "$ref": "cumulative_question.schema.json" },
+  "minItems": 8,
+  "maxItems": 10
+}

@@ -1,0 +1,27 @@
+- id: "c.1"
+  question: "Complete: [sentence with {blank} for key term]"
+  answer: "[blank term]"
+  explanation: "[Why this term matters]"
+  difficulty: 1
+  tags: [terminology]
+
+- id: "c.2"
+  question: "Complete: [conceptual sentence with {blank}]"
+  answer: "[blank term]"
+  explanation: "[Reasoning chain]"
+  difficulty: 2
+  tags: [concept]
+
+- id: "c.3"
+  question: "Complete: [application sentence with {blank}]"
+  answer: "[blank term]"
+  explanation: "[Why this matters in practice]"
+  difficulty: 3
+  tags: [application]
+
+# Difficulty: 1=recall, 2=comprehension, 3=application
+# Tags: terminology, concept, formula, process, comparison
+# 40% difficulty 1, 40% diff 2, 20% diff 3
+# 8-10 cloze questions per module
+# Good cloze = conceptual context, not trivial blanking
+# Format: {blank} marks the term to fill in

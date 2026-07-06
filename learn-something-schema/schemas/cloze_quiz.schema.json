@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://learn-something.dev/schemas/cloze_quiz.json",
+  "title": "Cloze Quiz",
+  "description": "Schema for cloze.yaml — fill-in-blank questions per module",
+  "type": "array",
+  "items": { "$ref": "#/$defs/cloze_question" },
+  "minItems": 1
+}

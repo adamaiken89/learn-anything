@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "build": {
+      "prompt": "Learn-Something CLI. Python scripts/ (learn.py, sm2.py, enrich.py) + templates/. Tests: python3 -m pytest tests/ -q. No venv (system python3). Key: pip install --break-system-packages for deps."
+    }
+  },
+  "mcp": {
+    "filesystem": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem"],
+      "args": [
+        "/Users/tszyeungwan/.config/opencode/skills/learn-something",
+        "/Users/tszyeungwan/Desktop/Side Projects/courses"
+      ],
+      "enabled": true
+    }
+  }
+}

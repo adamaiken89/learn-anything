@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://learn-anything.dev/schemas/question.json",
+  "$id": "https://learn-something.dev/schemas/question.json",
   "title": "Quiz Question",
   "description": "Schema for a single quiz question",
   "type": "object",

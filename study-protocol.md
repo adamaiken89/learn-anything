@@ -26,17 +26,23 @@ Three learning theories fused:
 4. For deeper probing: open opencode chat, explain concept to AI. AI finds gaps.
 
 ### REVIEW (10-15 min, daily) — Desirable Difficulties
-1. `learn.sh <topic> review` → due cards SM-2
+1. `learn.sh <topic> review` → due cards FSRS-5
 2. Cards mixed from multiple modules (interleaved)
 3. Correct → interval grows. Wrong → reset 1d.
 4. `learn.sh <topic> stats` → retention, weak areas
+
+### CUMULATIVE (20-30 min) — Desirable Difficulties + Marva
+1. `learn.sh <topic> cumulative-quiz --modules X-Y`
+2. 8-10 questions mixing MCQ, cloze, T/F across modules
+3. Cross-module connections tested — not just isolated recall
+4. Wrong answers → review weak modules
 
 ### MIXED (30-45 min) — all three
 - REVIEW 10 min
 - LEARN 25 min (one new module)
 - EXPLAIN 5 min (Feynman check on new module)
 
-## Spaced Repetition (SM-2)
+## Spaced Repetition (FSRS-5)
 
 Each MCQ = 1 SRS card.
 
@@ -52,13 +58,14 @@ Ease factor min 1.3. Adjusts per card based on answer history.
 ```
 <topic>/
 ├── syllabus.yaml       # Full course plan (includes language: en|zh|yue)
+├── cumulative_quiz.yaml # Cross-module quiz (8-10 questions, mix of types)
 ├── modules/
 │   ├── NN-name/
-│   │   ├── lesson.md   # Content + Feynman prompt + reframe
+│   │   ├── lesson.md   # Content + Feynman prompt + reframe + mindmap
 │   │   └── quiz.yaml   # 8-10 MCQs
 │   └── ...
 └── srs/
-    ├── deck.json       # SM-2 card states
+    ├── deck.json       # FSRS-5 card states
     └── stats.json      # Study history
 ```
 

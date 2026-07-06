@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://learn-anything.dev/schemas/card.json",
+  "$id": "https://learn-something.dev/schemas/card.json",
   "title": "SRS Card",
   "description": "Schema for a single spaced repetition card",
   "type": "object",

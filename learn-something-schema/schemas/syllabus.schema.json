@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://learn-anything.dev/schemas/syllabus.json",
+  "$id": "https://learn-something.dev/schemas/syllabus.json",
   "title": "Course Syllabus",
   "description": "Schema for syllabus.yaml — course skeleton with module metadata",
   "type": "object",

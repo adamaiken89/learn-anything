@@ -33,9 +33,9 @@
   explanation: "[Scenario logic]"
   difficulty: 3
   tags: [scenario]
-
 # Difficulty: 1=recall, 2=comprehension, 3=application
 # Tags: terminology, concept, formula, scenario, comparison, calculation
 # 40% difficulty 1, 40% diff 2, 20% diff 3
 # Exactly 4 options, 1 correct
 # At least 1 question per learning objective
+# Answer distribution: rotate across A/B/C/D, no more than 2 consecutive same letter
